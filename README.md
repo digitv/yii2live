@@ -1,1 +1,1 @@
-# yii2live SANDBOX!
+# Yii2live SANDBOX project!
