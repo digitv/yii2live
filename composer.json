@@ -1,0 +1,32 @@
+{
+    "name": "digitv/yii2live",
+    "version": "1.0.0",
+    "description": "Yii2 Live package",
+    "keywords": ["yii2", "ajax", "async", "live", "node.js"],
+    "type": "yii2-extension",
+    "license": "MIT",
+    "support": {
+        "issues": "https://github.com/digitv/yii2live/issues",
+        "source": "https://github.com/digitv/yii2live"
+    },
+    "authors": [
+        {
+            "name": "Digit",
+            "email": "digit.vova@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "yiisoft/yii2": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "digitv\\yii2live\\": ""
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.x-dev"
+        }
+    }
+}
