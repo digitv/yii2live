@@ -10,6 +10,10 @@
             '//' + window.location.host, window.location.protocol + '//' + window.location.host
         ]
     };
+    this.events = {
+        EVENT_HTML_INSERT: 'yii2live:html',
+        EVENT_WIDGETS_LOADED: 'yii2live:widgetsLoaded'
+    };
     this.pushStateSupported = undefined;
     this.settings = {};
 
@@ -57,6 +61,7 @@
             linkClick: function (e) {
                 var link = $(this), href = link.attr('href');
                 if(!self.utils.isLocalUrl(href)) return;
+                if(link.attr('target') === "_blank" || link.attr('data-live') === "0") return;
                 e.preventDefault();
                 self.request.ajax(href, {method: 'get'});
             },
@@ -64,16 +69,15 @@
                 if(typeof e.state === "undefined" || e.state === null) {
                     window.location.reload(); return;
                 }
-                //$('html').html(e.state);
             },
             ajaxSuccess: function (response, statusText, xhr) {
                 self.response.processData(response);
-                self.request.pushState($('html').html(), null, window.location.pathname, true);
+                self.request.pushState(null, null, window.location.pathname, true);
                 console.log('ajaxSuccess');
             },
             ajaxError: function (xhr, statusText) {
                 history.back();
-                console.log('ajaxError', xhr, xhr.status);
+                console.error('ajaxError', xhr, xhr.status);
             },
             ajaxComplete: function (xhr, statusText) {
                 //console.log('ajaxComplete');
@@ -126,26 +130,140 @@
         return {
             processData: function (data) {
                 console.log(data);
-                var i, metaRow, callbackName, callbackArgs;
                 if(typeof data.meta !== "undefined") {
-                    for(i in data.meta) {
-                        metaRow = data.meta[i];
-                        if(typeof metaRow.callback === "undefined" || typeof metaRow.args === "undefined") continue;
-                        callbackName = metaRow.callback;
-                        callbackArgs = metaRow.args;
-                        if(typeof self.response[callbackName] === "function") {
-                            result = self.response[callbackName].apply(self, callbackArgs);
-                        }
+                    self.pageMeta.process(data.meta);
+                }
+                if(typeof data.widgets !== "undefined") {
+                    self.pageWidgets.process(data.widgets);
+                }
+            }
+        };
+    }();
+
+    this.pageMeta = function () {
+        return {
+            process: function (data) {
+                var i, metaRow, callbackName, callbackArgs;
+                for(i in data) {
+                    metaRow = data[i];
+                    if(typeof metaRow.callback === "undefined" || typeof metaRow.args === "undefined") continue;
+                    callbackName = metaRow.callback;
+                    callbackArgs = metaRow.args;
+                    if(typeof self.pageMeta[callbackName] === "function") {
+                        result = self.pageMeta[callbackName].apply(self, callbackArgs);
                     }
                 }
             },
             processJs: function (data) {
-                console.log(data);
+                var region, regionSelector, regionName;
+                regionName = typeof data.region !== "undefined" && $.trim(data.region) !== "" ? data.region : undefined;
+                regionSelector = typeof data.regionSelector !== "undefined" && $.trim(data.regionSelector) !== "" ? data.regionSelector : undefined;
+                if(typeof regionName !== "undefined" || typeof regionSelector !== "undefined") {
+                    region = self.pageMeta.getRegion(regionName, regionSelector);
+                    if(!region.length) return;
+                    self.pageMeta.processItems(region, 'script', 'src', data.items, data.order, data.inline);
+                }
+            },
+            processCss: function (data) {
+                var region, regionSelector, inlineItems;
+                //regionName = typeof data.region !== "undefined" && $.trim(data.region) !== "" ? data.region : undefined;
+                regionSelector = 'head';
+                inlineItems = typeof data.inline !== "undefined" ? data.inline : undefined;
+                region = self.pageMeta.getRegion(undefined, regionSelector);
+                if(!region.length) return;
+                self.pageMeta.processItems(region, 'link', 'href', data.items, data.order, inlineItems);
             },
             processTitle: function (titleHtml) {
                 var html = $('html'), title = html.find('head title'), h1 = html.find('h1');
                 if(h1.length) h1.html(titleHtml);
                 title.text(titleHtml);
+            },
+            processItems: function (region, tagName, attribute, items, order, inline) {
+                var prevItem, firstItem, i, itemKey, item, itemAttr, itemExist, inlineItems, inlineInsertCallback, inlineAfterBlocks = false;
+                if(typeof items === "object" && Object.keys(items).length) {
+                    order = typeof order !== "undefined" && order.length ? order : Object.keys(items);
+                    for (i in order) {
+                        itemKey = order[i];
+                        if(typeof items[itemKey] === "undefined") continue;
+                        item = $(items[itemKey]);
+                        itemAttr = item.attr(attribute);
+                        itemExist = region.find(tagName + '['+attribute+'="'+itemAttr+'"]');
+                        if(!itemExist.length) {
+                            if(typeof prevItem !== "undefined" && prevItem.length) {
+                                prevItem.after(item);
+                            } else {
+                                firstItem = region.find(tagName + '['+attribute+']');
+                                if(firstItem.length) {
+                                    firstItem.before(item);
+                                } else {
+                                    region.append(item);
+                                }
+                            }
+                        }
+                        prevItem = itemExist.length ? itemExist : item;
+                    }
+                }
+                if(typeof inline !== "undefined" && $.trim(inline) !== "") {
+                    switch (tagName) {
+                        case 'script':
+                            inlineAfterBlocks = true;
+                            inlineItems = region.find(tagName + ':not([src])');
+                            inlineItems.remove();
+                            inlineInsertCallback = function () {
+                                region.append(inline);
+                            };
+                            break;
+                        case 'link':
+                            inlineItems = region.find('style');
+                            region.append(inline);
+                            inlineItems.remove();
+                            break;
+                    }
+                    //Inline scripts must be inserted after widgets insertion
+                    if(inlineAfterBlocks && typeof inlineInsertCallback === "function") {
+                        var inlineInsertCallbackWrap = function (e) {
+                            if(typeof inlineInsertCallback === "function") inlineInsertCallback(e);
+                            $(document).off(self.events.EVENT_WIDGETS_LOADED, inlineInsertCallbackWrap);
+                        };
+                        $(document).on(self.events.EVENT_WIDGETS_LOADED, inlineInsertCallbackWrap);
+                    }
+                }
+            },
+            getRegion: function (name, selector) {
+                if(typeof name !== "undefined") {
+                    return $('[data-live-region="'+name+'"]');
+                }
+                if(typeof selector !== "undefined") {
+                    return $(selector);
+                }
+            }
+        };
+    }();
+
+    this.pageWidgets = function () {
+        return {
+            process: function (data) {
+                var i, widgetRow, callbackName, callbackArgs;
+                for(i in data) {
+                    widgetRow = data[i];
+                    if(typeof widgetRow.callback === "undefined") continue;
+                    callbackName = widgetRow.callback;
+                    if(typeof self.pageWidgets[callbackName] === "function") {
+                        result = self.pageWidgets[callbackName].apply(self, [widgetRow]);
+                    }
+                }
+                $(document).trigger(self.events.EVENT_WIDGETS_LOADED);
+            },
+            processHtml: function (data) {
+                var widget = $('#' + data.id);
+                var insertMethod = typeof data.insertMethod !== "undefined" ? data.insertMethod : 'insert';
+                if(typeof data.dataHtml === "undefined" || !widget.length) return;
+                if(insertMethod === "replace") {
+                    widget.replaceWith(data.dataHtml);
+                } else {
+                    widget.html(data.dataHtml);
+                }
+                widget.trigger(self.events.EVENT_HTML_INSERT);
             }
         };
     }();

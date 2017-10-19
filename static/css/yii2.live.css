@@ -1,0 +1,6 @@
+.yii2-live-widget-empty {
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+}
