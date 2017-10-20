@@ -3,6 +3,7 @@
 namespace digitv\yii2live\components;
 
 use digitv\yii2live\assets\Yii2LiveAsset;
+use digitv\yii2live\widgets\LoadingIndicator;
 use digitv\yii2live\Yii2Live;
 use Yii;
 use yii\bootstrap\Html;
@@ -269,6 +270,11 @@ class View extends \yii\web\View
             }
             $lines[] = Html::tag('div', implode("\n", $jsLines), ['data-live-region' => self::getPageRegion(self::POS_END, 'js')]);
         }
+
+        //Add loading indicator
+        $lines[] = LoadingIndicator::widget([
+            'id' => 'yii2-live-loader',
+        ]);
 
         return empty($lines) ? '' : implode("\n", $lines);
     }
