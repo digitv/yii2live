@@ -17,6 +17,9 @@ class Yii2LiveAsset extends AssetBundle
     public $js = [
         'js/yii2live.base.js',
     ];
+    public $css = [
+        'css/yii2.live.css',
+    ];
     public $depends = [
         'yii\web\JqueryAsset',
         'yii\web\YiiAsset',

@@ -138,13 +138,13 @@ class View extends \yii\web\View
         //Head section
         $dataPos = [
             self::POS_HEAD => [
-                'region' => self::getPageRegion(self::POS_HEAD, 'js'),
+                'regionSelector' => 'head',
             ],
             self::POS_BEGIN => [
                 'region' => self::getPageRegion(self::POS_BEGIN, 'js'),
             ],
             self::POS_END => [
-                'region' => self::getPageRegion(self::POS_BEGIN, 'js'),
+                'region' => self::getPageRegion(self::POS_END, 'js'),
             ],
         ];
 
@@ -204,19 +204,14 @@ class View extends \yii\web\View
         $regionFiles = self::getPageRegion(self::POS_BEGIN);
         $regionInline = self::getPageRegion(self::POS_BEGIN, 'js', true);
         if (!empty($this->jsFiles[self::POS_BEGIN])) {
-            $temp = implode("\n", $this->jsFiles[self::POS_BEGIN]);
-            $lines[] = Html::tag('div', $temp, ['data-async-region' => $regionFiles]);
-        } else {
-            $lines[] = Html::tag('div', '', ['data-async-region' => $regionFiles]);
+            $lines[] = implode("\n", $this->jsFiles[self::POS_BEGIN]);
         }
         if (!empty($this->js[self::POS_BEGIN])) {
-            $temp = Html::script(implode("\n", $this->js[self::POS_BEGIN]), ['type' => 'text/javascript']);
-            $lines[] = Html::tag('div', $temp, ['data-async-region' => $regionInline]);
-        } else {
-            $lines[] = Html::tag('div', '', ['data-async-region' => $regionInline]);
+            $lines[] = Html::script(implode("\n", $this->js[self::POS_BEGIN]), ['type' => 'text/javascript']);
         }
+        $linesStr = Html::tag('div', implode("\n", $lines), ['data-live-region' => $regionFiles]);
 
-        return empty($lines) ? '' : implode("\n", $lines);
+        return $linesStr;
     }
 
     /**
@@ -249,13 +244,15 @@ class View extends \yii\web\View
                 $lines[] = Html::script(implode("\n", $scripts), ['type' => 'text/javascript']);
             }
         } else {
-            if (!empty($this->jsFiles[self::POS_END])) {
-                $temp = implode("\n", $this->jsFiles[self::POS_END]);
-                $lines[] = Html::tag('div', $temp, ['data-async-region' => self::getPageRegion(self::POS_END)]);
-            } else {
-                $lines[] = Html::tag('div', "\n", ['data-async-region' => self::getPageRegion(self::POS_END)]);
-            }
             $jsInline = [];
+            $jsLines  = [];
+            if (!empty($this->jsFiles[self::POS_END])) {
+                //$temp = implode("\n", $this->jsFiles[self::POS_END]);
+                //$lines[] = Html::tag('div', $temp, ['data-live-region' => self::getPageRegion(self::POS_END)]);
+                $jsLines[] = implode("\n", $this->jsFiles[self::POS_END]);
+            } else {
+                //$lines[] = Html::tag('div', "\n", ['data-live-region' => self::getPageRegion(self::POS_END)]);
+            }
             if (!empty($this->js[self::POS_END])) {
                 $jsInline[] = Html::script(implode("\n", $this->js[self::POS_END]), ['type' => 'text/javascript']);
             }
@@ -267,7 +264,10 @@ class View extends \yii\web\View
                 $js = "jQuery(window).on('load', function () {\n" . implode("\n", $this->js[self::POS_LOAD]) . "\n});";
                 $jsInline[] = Html::script($js, ['type' => 'text/javascript']);
             }
-            $lines[] = Html::tag('div', implode("\n", $jsInline), ['data-async-region' => self::getPageRegion(self::POS_END, 'js', true)]);
+            if(!empty($jsInline)) {
+                $jsLines[] = implode("\n", $jsInline);
+            }
+            $lines[] = Html::tag('div', implode("\n", $jsLines), ['data-live-region' => self::getPageRegion(self::POS_END, 'js')]);
         }
 
         return empty($lines) ? '' : implode("\n", $lines);

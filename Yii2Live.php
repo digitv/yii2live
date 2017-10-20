@@ -2,9 +2,11 @@
 
 namespace digitv\yii2live;
 
+use digitv\yii2live\behaviors\WidgetBehavior;
 use digitv\yii2live\components\Request;
 use digitv\yii2live\components\Response;
 use digitv\yii2live\components\View;
+use digitv\yii2live\widgets\BaseLiveWidget;
 use Yii;
 use yii\base\Application;
 use yii\base\BootstrapInterface;
@@ -26,6 +28,10 @@ class Yii2Live extends Component implements BootstrapInterface
     public $formSelector = 'form';
     /** @var string Header name used for AJAX requests */
     public $headerName = 'X-Yii2-Live';
+
+    /** @var bool */
+    protected $_isLiveRequest;
+
     /** @var self */
     protected static $self;
 
@@ -61,12 +67,27 @@ class Yii2Live extends Component implements BootstrapInterface
     }
 
     /**
-     * Check that request is performed by async component
+     * Check that request is performed by yii2live component
      * @return bool
      */
     public function isLiveRequest() {
-        $request = Yii::$app->request;
-        return $request instanceof Request && $request->isLiveUsed();
+        if(!isset($this->_isLiveRequest)) {
+            $request = Yii::$app->request;
+            $this->_isLiveRequest = $request instanceof Request && $request->isLiveUsed();
+        }
+        return $this->_isLiveRequest;
+    }
+
+    /**
+     * Set widget data for response
+     * @param BaseLiveWidget|WidgetBehavior $widget
+     */
+    public function setWidgetData($widget) {
+        $widgetId = $widget instanceof BaseLiveWidget ? $widget->id : $widget->owner->id;
+        $data = $widget->getWidgetLiveData();
+        /** @var Response $response */
+        $response = Yii::$app->response;
+        $response->livePageWidgets[$widgetId] = $data;
     }
 
     /**

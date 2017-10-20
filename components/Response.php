@@ -4,6 +4,7 @@ namespace digitv\yii2live\components;
 
 use digitv\yii2live\Yii2Live;
 use Yii;
+use yii\helpers\ArrayHelper;
 
 /**
  * Class Response
@@ -11,6 +12,8 @@ use Yii;
  */
 class Response extends \yii\web\Response
 {
+    public $livePageWidgets = [];
+
     /**
      * Sends the response to the client.
      */
@@ -36,9 +39,11 @@ class Response extends \yii\web\Response
         $responseData = $this->data;
         /** @var View $view */
         $view = Yii::$app->view;
+        /** TODO: remove this */
+        $this->livePageWidgets = ArrayHelper::merge($this->livePageWidgets, $view->livePageBlocks);
         $data = [
             'meta' => $view->livePageMeta,
-            'blocks' => $view->livePageBlocks,
+            'widgets' => $this->livePageWidgets,
         ];
         if(is_array($responseData)) {
             $data['content'] = $responseData;

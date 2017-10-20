@@ -76,6 +76,7 @@
                 console.log('ajaxSuccess');
             },
             ajaxError: function (xhr, statusText) {
+                if(xhr.statusText === "abort") return;
                 history.back();
                 console.error('ajaxError', xhr, xhr.status);
             },
@@ -88,6 +89,8 @@
     //Request
     this.request = function () {
         var rq = this;
+
+        this.ajaxRequest = null;
 
         this.defaultOptions = {
             method: 'post',
@@ -104,6 +107,7 @@
 
         return {
             ajax: function (url, options) {
+                self.request.ajaxAbort();
                 if(typeof url === "undefined") {
                     console.error('Required parameter `url` is missing'); return;
                 }
@@ -111,7 +115,13 @@
                     self.request.pushState(null, null, url);
                 }
                 options = $.extend({}, rq.getDefaultOptions(), options);
-                $.ajax(url, options);
+                rq.ajaxRequest = $.ajax(url, options);
+            },
+            ajaxAbort: function () {
+                if(rq.ajaxRequest) {
+                    rq.ajaxRequest.abort();
+                    rq.ajaxRequest = null;
+                }
             },
             pushState: function (data, title, url, replace) {
                 if(!self.utils.isPushStateSupported()) return;
@@ -154,60 +164,87 @@
                     }
                 }
             },
+            processCsrf: function (param, token) {
+                var region, regionSelector = 'head', params = {tagName: 'meta', attribute: 'name', forceReplace: true},
+                    items = {
+                        "csrf-param": '<meta name="csrf-param" content="' + param + '">',
+                        "csrf-token": '<meta name="csrf-token" content="' + token + '">'
+                    };
+                $('form input[name="'+param+'"]').val(token);
+                region = self.pageMeta.getRegion(undefined, regionSelector);
+                if(!region.length) return;
+                self.pageMeta.processItems(region, items, undefined, params);
+            },
             processJs: function (data) {
-                var region, regionSelector, regionName;
+                var region, regionSelector, regionName, params = {tagName: 'script', attribute: 'src', order: data.order};
                 regionName = typeof data.region !== "undefined" && $.trim(data.region) !== "" ? data.region : undefined;
                 regionSelector = typeof data.regionSelector !== "undefined" && $.trim(data.regionSelector) !== "" ? data.regionSelector : undefined;
                 if(typeof regionName !== "undefined" || typeof regionSelector !== "undefined") {
                     region = self.pageMeta.getRegion(regionName, regionSelector);
                     if(!region.length) return;
-                    self.pageMeta.processItems(region, 'script', 'src', data.items, data.order, data.inline);
+                    self.pageMeta.processItems(region, data.items, data.inline, params);
                 }
             },
             processCss: function (data) {
-                var region, regionSelector, inlineItems;
-                //regionName = typeof data.region !== "undefined" && $.trim(data.region) !== "" ? data.region : undefined;
-                regionSelector = 'head';
+                var region, regionSelector = 'head', inlineItems,
+                    params = {tagName: 'link', attribute: 'href', order: data.order};
                 inlineItems = typeof data.inline !== "undefined" ? data.inline : undefined;
                 region = self.pageMeta.getRegion(undefined, regionSelector);
                 if(!region.length) return;
-                self.pageMeta.processItems(region, 'link', 'href', data.items, data.order, inlineItems);
+                self.pageMeta.processItems(region, data.items, inlineItems, params);
+            },
+            processMeta: function (data) {
+                var region, regionSelector = 'head',
+                    params = {tagName: 'meta', attribute: 'name'};
+                region = self.pageMeta.getRegion(undefined, regionSelector);
+                if(!region.length) return;
+                self.pageMeta.processItems(region, data.items, undefined, params);
             },
             processTitle: function (titleHtml) {
                 var html = $('html'), title = html.find('head title'), h1 = html.find('h1');
                 if(h1.length) h1.html(titleHtml);
                 title.text(titleHtml);
             },
-            processItems: function (region, tagName, attribute, items, order, inline) {
+            processItems: function (region, items, inline, params) {
+                var defaultParams = {
+                    tagName: 'script',
+                    attribute: 'src',
+                    order: [],
+                    forceReplace: false
+                };
+                if(typeof params === "undefined") params = {};
+                params = $.extend({}, defaultParams, params);
                 var prevItem, firstItem, i, itemKey, item, itemAttr, itemExist, inlineItems, inlineInsertCallback, inlineAfterBlocks = false;
                 if(typeof items === "object" && Object.keys(items).length) {
-                    order = typeof order !== "undefined" && order.length ? order : Object.keys(items);
-                    for (i in order) {
-                        itemKey = order[i];
+                    params.order = typeof params.order !== "undefined" && params.order.length ? params.order : Object.keys(items);
+                    for (i in params.order) {
+                        itemKey = params.order[i];
                         if(typeof items[itemKey] === "undefined") continue;
                         item = $(items[itemKey]);
-                        itemAttr = item.attr(attribute);
-                        itemExist = region.find(tagName + '['+attribute+'="'+itemAttr+'"]');
+                        itemAttr = item.attr(params.attribute);
+                        itemExist = region.find(params.tagName + '['+params.attribute+'="'+itemAttr+'"]');
                         if(!itemExist.length) {
                             if(typeof prevItem !== "undefined" && prevItem.length) {
                                 prevItem.after(item);
                             } else {
-                                firstItem = region.find(tagName + '['+attribute+']');
+                                firstItem = region.find(params.tagName + '['+params.attribute+']');
                                 if(firstItem.length) {
                                     firstItem.before(item);
                                 } else {
                                     region.append(item);
                                 }
                             }
+                        } else if(params.forceReplace) {
+                            itemExist.replaceWith(item);
                         }
                         prevItem = itemExist.length ? itemExist : item;
                     }
                 }
                 if(typeof inline !== "undefined" && $.trim(inline) !== "") {
-                    switch (tagName) {
+                    switch (params.tagName) {
                         case 'script':
                             inlineAfterBlocks = true;
-                            inlineItems = region.find(tagName + ':not([src])');
+                            inlineItems = region.find(params.tagName + ':not([src])');
                             inlineItems.remove();
                             inlineInsertCallback = function () {
                                 region.append(inline);
