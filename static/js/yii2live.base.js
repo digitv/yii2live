@@ -81,6 +81,7 @@
                 console.error('ajaxError', xhr, xhr.status);
             },
             ajaxComplete: function (xhr, statusText) {
+                self.loader.deActivate();
                 //console.log('ajaxComplete');
             }
         };
@@ -108,6 +109,7 @@
         return {
             ajax: function (url, options) {
                 self.request.ajaxAbort();
+                self.loader.activate();
                 if(typeof url === "undefined") {
                     console.error('Required parameter `url` is missing'); return;
                 }
@@ -122,6 +124,7 @@
                     rq.ajaxRequest.abort();
                     rq.ajaxRequest = null;
                 }
+                self.loader.deActivate();
             },
             pushState: function (data, title, url, replace) {
                 if(!self.utils.isPushStateSupported()) return;
@@ -146,6 +149,23 @@
                 if(typeof data.widgets !== "undefined") {
                     self.pageWidgets.process(data.widgets);
                 }
+            }
+        };
+    }();
+
+    //Response
+    this.loader = function () {
+        return {
+            getElem: function () {
+                return $('.yii2-live-loading-indicator:first');
+            },
+            activate: function () {
+                var elem = self.loader.getElem();
+                elem.addClass('active');
+            },
+            deActivate: function () {
+                var elem = self.loader.getElem();
+                elem.removeClass('active');
             }
         };
     }();
