@@ -4,6 +4,9 @@
     overflow: hidden;
     visibility: hidden;
 }
+.yii2-live-widget {
+    overflow: hidden;
+}
 
 .yii2-live-loading-indicator {
     position: fixed;
@@ -37,4 +40,32 @@
     right: 5px;
     top: 50%;
     margin-top: -12px;
+}
+
+.yii2live-element-ajax-wrapper {
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+    max-height: none;
+    transition: min-height 0.3s ease 0s, max-height 0.3s ease 0s;
+}
+.yii2live-element-ajax-wrapper > * {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+.yii2live-element-ajax-wrapper::before {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #FFF;
+    opacity: 0;
+    transition: min-height 0.3s ease 0s, max-height 0.3s ease 0s, opacity 0.3s ease 0s;
+}
+.yii2live-element-ajax-wrapper.active::before {
+    opacity: 0.5;
+    transition: opacity 0s ease 0s;
 }

@@ -6,6 +6,7 @@
         headerName: "X-Yii2-Live",
         linkSelector: "a",
         formSelector: "form",
+        wrapElementClass: 'yii2live-element-ajax-wrapper',
         domainsLocal: [
             '//' + window.location.host, window.location.protocol + '//' + window.location.host
         ]
@@ -316,11 +317,94 @@
                 var insertMethod = typeof data.insertMethod !== "undefined" ? data.insertMethod : 'insert';
                 if(typeof data.dataHtml === "undefined" || !widget.length) return;
                 if(insertMethod === "replace") {
-                    widget.replaceWith(data.dataHtml);
+                    self.dom.replaceWith(widget, data.dataHtml, true);
+                    //widget.replaceWith(data.dataHtml);
                 } else {
-                    widget.html(data.dataHtml);
+                    //widget.html(data.dataHtml);
+                    self.dom.html(widget, data.dataHtml, true);
                 }
                 widget.trigger(self.events.EVENT_HTML_INSERT);
+            }
+        };
+    }();
+
+    this.dom = function () {
+        return {
+            //$.fn.replaceWith
+            replaceWith: function (element, replacement, wrap) {
+                var wrapElement = wrap ? element : false;
+                return self.dom.insert(element, replacement, 'replaceWith', wrapElement);
+            },
+            //$.fn.html
+            html: function (element, html, wrap) {
+                var wrapElement = wrap ? element : false;
+                return self.dom.insert(element, html, 'html', wrapElement);
+            },
+            //$.fn.before
+            before: function (element, html, wrap) {
+                var wrapElement = wrap ? element.parent() : false;
+                return self.dom.insert(element, html, 'before', wrapElement);
+            },
+            //$.fn.after
+            after: function (element, html, wrap) {
+                var wrapElement = wrap ? element.parent() : false;
+                return self.dom.insert(element, html, 'after', wrapElement);
+            },
+            //html or element insertion
+            insert: function (element, html, method, wrapElement) {
+                var wrap = true;
+                if(typeof element === "string") element = $(element);
+                if(!element.length || typeof $.fn[method] !== "function") return;
+                if(typeof wrapElement === "undefined" || !wrapElement) wrap = false;
+                else if(typeof wrapElement !== "object") wrapElement = element;
+                //wrap element
+                if(wrap) { self.dom.wrap(wrapElement); }
+                //Get new wrapElement for replace method
+                if(method === "replaceWith") {
+                    html = $(html);
+                    wrapElement = html;
+                }
+                $.fn[method].apply(element, [html]);
+                //unwrap element
+                if(wrap) { self.dom.unwrap(wrapElement); }
+                return element;
+            },
+            //Wrap element
+            wrap: function (element) {
+                var wrapperHtml = '<div class="'+self.settings.wrapElementClass+' active"></div>', wrapper,
+                    elMarginTop = parseInt(element.css('margin-top')), elMarginBottom = parseInt(element.css('margin-bottom')),
+                    wrapperCss = {minHeight: element.outerHeight(), maxHeight: element.outerHeight()};
+                //If element or any of parents is wrapped than exit
+                if (element.parents('.' + self.settings.wrapElementClass).length) return;
+                element.wrap(wrapperHtml);
+                wrapper = element.parent();
+                if(!isNaN(elMarginTop) && elMarginTop) wrapperCss.marginTop = elMarginTop + 'px';
+                if(!isNaN(elMarginBottom) && elMarginBottom) wrapperCss.marginBottom = elMarginBottom + 'px';
+                console.log(elMarginBottom, wrapperCss);
+                wrapper.css(wrapperCss);
+                //element.css({marginTop: 0, marginBottom: 0});
+            },
+            //Unwrap element
+            unwrap: function (element, time) {
+                time = typeof time !== "undefined" ? time : 400;
+                var wrapper = element.parent().filter('.' + self.settings.wrapElementClass),
+                    wH, wSh, elCss = {},
+                    wMarginTop = parseInt(element.css('margin-top')), wMarginBottom = parseInt(element.css('margin-bottom'));
+                if(!wrapper.length) return;
+                wH = wrapper.outerHeight();
+                wSh = wrapper[0].scrollHeight;
+                if(wSh > wH) {
+                    wrapper.addClass('max-height-exceeded');
+                    wrapper.css({maxHeight: wSh});
+                }
+                wrapper.removeClass('active');
+                setTimeout(function () {
+                    wrapper.removeAttr('style');
+                    if(!isNaN(wMarginTop) && wMarginTop) elCss.marginTop = wMarginTop;
+                    if(!isNaN(wMarginBottom) && wMarginBottom) elCss.marginBottom = wMarginBottom;
+                    element.css(elCss);
+                    element.unwrap('.' + self.settings.wrapElementClass);
+                }, time);
             }
         };
     }();
@@ -347,6 +431,7 @@
     Yii2Live.prototype.response = this.response;
     Yii2Live.prototype.settings = this.settingsUtils;
     Yii2Live.prototype.ajaxCmd = this.ajaxCmd;
+    Yii2Live.prototype.dom = this.dom;
 
     return Yii2Live;
 });
