@@ -325,6 +325,8 @@
         };
     }();
 
+    this.ajaxCmd = yii2liveCmd(self);
+
     //Init callback
     this.init = function () {
         if(self.utils.isPushStateSupported()) {
@@ -344,6 +346,7 @@
     Yii2Live.prototype.utils = this.utils;
     Yii2Live.prototype.response = this.response;
     Yii2Live.prototype.settings = this.settingsUtils;
+    Yii2Live.prototype.ajaxCmd = this.ajaxCmd;
 
     return Yii2Live;
 });

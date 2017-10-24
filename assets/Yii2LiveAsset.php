@@ -15,6 +15,7 @@ class Yii2LiveAsset extends AssetBundle
     public $name = 'Yii2Live main asset bundle';
     public $sourcePath = '@yii2live/static';
     public $js = [
+        'js/yii2live.cmd.js',
         'js/yii2live.base.js',
     ];
     public $css = [
