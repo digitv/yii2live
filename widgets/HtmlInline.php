@@ -41,6 +41,7 @@ class HtmlInline extends Widget
 
         ob_start();
         ob_implicit_flush(false);
+        Html::addCssClass($this->options, 'yii2-live-widget');
         echo Html::beginTag($this->tag, $this->options);
         if(!$this->isLiveRequest()) {}
     }

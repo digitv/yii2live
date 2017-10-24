@@ -12,15 +12,6 @@ use digitv\yii2live\behaviors\WidgetBehavior;
 
 class Breadcrumbs extends \yii\widgets\Breadcrumbs
 {
-//    public function behaviors()
-//    {
-//        return [
-//            'breadCrumbs' => [
-//                'class' => BaseLiveWidgetExtender::className(),
-//                'extendClass' => \yii\widgets\Breadcrumbs::className()
-//            ],
-//        ];
-//    }
     /**
      * @inheritdoc
      */
