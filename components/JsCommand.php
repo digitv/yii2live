@@ -156,11 +156,13 @@ class JsCommand extends Object
 
     /**
      * $.fn.parents (used in chain)
-     * @param $selector
+     * @param string $selector
+     * @param string $filter
      * @return JsCommand
      */
-    public function jParents($selector) {
-        return $this->jQuery($selector, 'parents', ['li']);
+    public function jParents($selector, $filter = null) {
+        $arguments = isset($filter) ? [$filter] : [];
+        return $this->jQuery($selector, 'parents', $arguments);
     }
 
     /**

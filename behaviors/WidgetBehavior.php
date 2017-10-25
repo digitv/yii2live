@@ -188,9 +188,10 @@ class WidgetBehavior extends Behavior
      * Check that widget state changed
      * @param array $data
      * @param bool  $saveState
+     * @param bool  $checkLanguage
      * @return bool
      */
-    public function checkWidgetState($data = [], $saveState = true) {
+    public function checkWidgetState($data = [], $saveState = true, $checkLanguage = true) {
         $this->processWidgetState($data);
         $oldDataRaw = Yii2Live::getSelf()->getWidgetRequestState($this->id, true);
         $oldData = isset($oldDataRaw['data']) ? $oldDataRaw['data'] : [];
@@ -198,7 +199,10 @@ class WidgetBehavior extends Behavior
         if($saveState) {
             $this->setWidgetState($data);
         }
-        if(empty($oldData) || !isset($oldData['lang']) || ($data['lang'] !== $oldData['lang'])) {
+        if(empty($oldData)) {
+            return static::LIVE_WIDGET_STATE_RELOAD;
+        }
+        if($checkLanguage && (!isset($oldData['lang']) || ($data['lang'] !== $oldData['lang']))) {
             return static::LIVE_WIDGET_STATE_RELOAD;
         }
         if(empty($oldDataRaw['hash']) || $newHash !== $oldDataRaw['hash']) {
