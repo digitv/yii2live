@@ -18,10 +18,21 @@ class Request extends \yii\web\Request
      */
     public function isLiveUsed() {
         if(!isset($this->_isLiveUsed)) {
-            $component = Yii2Live::getSelf();
-            $headerName = $component->headerName;
-            $this->_isLiveUsed = $this->headers->get($headerName) === 'true';
+            $requestId = $this->getRequestId();
+            $this->_isLiveUsed = !empty($requestId);
         }
         return $this->_isLiveUsed;
+    }
+
+    /**
+     * Get ID of this request
+     * @return array|null|string
+     */
+    public function getRequestId() {
+        $component = Yii2Live::getSelf();
+        $headerName = $component->headerName;
+        $requestId = $this->headers->get($headerName);
+        if(!$requestId || trim($requestId) === "") return null;
+        return $requestId;
     }
 }

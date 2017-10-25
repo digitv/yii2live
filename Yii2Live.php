@@ -3,6 +3,7 @@
 namespace digitv\yii2live;
 
 use digitv\yii2live\behaviors\WidgetBehavior;
+use digitv\yii2live\components\JsCommand;
 use digitv\yii2live\components\Request;
 use digitv\yii2live\components\Response;
 use digitv\yii2live\components\View;
@@ -11,13 +12,17 @@ use Yii;
 use yii\base\Application;
 use yii\base\BootstrapInterface;
 use yii\base\Component;
+use yii\helpers\ArrayHelper;
 
 /**
  * Class Yii2Async
- * @package digitv\yii2async
+ *
+ * @property string $requestId
  */
 class Yii2Live extends Component implements BootstrapInterface
 {
+    const SESSION_WIDGETS_KEY = 'yii2live-widgets-data';
+
     /** @var bool Global enabled flag */
     public $enabled = true;
     /** @var bool Use Node.js sockets to send response */
@@ -31,7 +36,8 @@ class Yii2Live extends Component implements BootstrapInterface
 
     /** @var bool */
     protected $_isLiveRequest;
-
+    /** @var string */
+    protected $_requestId;
     /** @var self */
     protected static $self;
 
@@ -41,6 +47,7 @@ class Yii2Live extends Component implements BootstrapInterface
     public function init()
     {
         parent::init();
+        if(!isset($_SESSION[static::SESSION_WIDGETS_KEY])) $_SESSION[static::SESSION_WIDGETS_KEY] = [];
         static::$self = $this;
     }
 
@@ -87,7 +94,73 @@ class Yii2Live extends Component implements BootstrapInterface
         $data = $widget->getWidgetLiveData();
         /** @var Response $response */
         $response = Yii::$app->response;
+        if($widget->widgetType === WidgetBehavior::LIVE_WIDGET_TYPE_COMMANDS && !empty($data['data']) && is_array($data['data'])) {
+            $response->liveCommands = ArrayHelper::merge($response->liveCommands, $data['data']);
+        }
         $response->livePageWidgets[$widgetId] = $data;
+    }
+
+    /**
+     * Get widget state for request
+     * @param string $widgetId
+     * @param bool   $raw
+     * @return array|null
+     */
+    public function getWidgetRequestState($widgetId, $raw = false) {
+        $requestId = $this->requestId;
+        $data = $_SESSION[static::SESSION_WIDGETS_KEY];
+        if(!isset($data[$requestId]) || !isset($data[$requestId][$widgetId])) return null;
+        return $raw ? $data[$requestId][$widgetId] : $data[$requestId][$widgetId]['data'];
+    }
+
+    /**
+     * Set widget state for request
+     * @param string $widgetId
+     * @param array $data
+     */
+    public function setWidgetRequestState($widgetId, $data) {
+        $widgetData = [
+            'data' => $data,
+            'hash' => md5(json_encode($data, JSON_FORCE_OBJECT + JSON_UNESCAPED_UNICODE)),
+        ];
+        $_SESSION[static::SESSION_WIDGETS_KEY][$this->requestId][$widgetId] = $widgetData;
+    }
+
+    /**
+     * Get request ID
+     * @return string
+     */
+    public function getRequestId() {
+        if(!isset($this->_requestId)) {
+            $requestId = $this->getRequestHeaderId();
+            if(!$requestId) {
+                $time = ceil(microtime(true) . 1000);
+                $rand = rand(1000, 9999);
+                $requestId = md5($time . ':' . $rand);
+            }
+            $this->_requestId = $requestId;
+        }
+        return $this->_requestId;
+    }
+
+    /**
+     * Add commands to response
+     * @return JsCommand
+     */
+    public function commands() {
+        return JsCommand::getInstance();
+    }
+
+    /**
+     * Get request ID from header
+     * @return array|null|string
+     */
+    protected function getRequestHeaderId() {
+        $request = Yii::$app->request;
+        if($request instanceof Request && $request->isLiveUsed()) {
+            return $request->getRequestId();
+        }
+        return null;
     }
 
     /**

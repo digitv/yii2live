@@ -3,6 +3,7 @@
 namespace digitv\yii2live\behaviors;
 
 use digitv\yii2live\Yii2Live;
+use Yii;
 use yii\base\Behavior;
 use yii\base\Widget;
 use yii\base\WidgetEvent;
@@ -12,12 +13,18 @@ use yii\bootstrap\Html;
  * Class WidgetBehavior
  *
  * @property Widget $owner
+ * @property string $id
  */
 class WidgetBehavior extends Behavior
 {
     const LIVE_WIDGET_TYPE_HTML             = 'html';
     const LIVE_WIDGET_TYPE_CONFIGURABLE     = 'configurable';
     const LIVE_WIDGET_TYPE_COMBINED         = 'combined';
+    const LIVE_WIDGET_TYPE_COMMANDS         = 'commands';
+
+    const LIVE_WIDGET_STATE_CHANGED         = 1;
+    const LIVE_WIDGET_STATE_NOT_CHANGED     = 0;
+    const LIVE_WIDGET_STATE_RELOAD          = 2;
 
     public $widgetType                      = self::LIVE_WIDGET_TYPE_HTML;
     /** @var string jQuery insert method (insert|replace) */
@@ -64,7 +71,7 @@ class WidgetBehavior extends Behavior
             $this->setLiveWidgetData($this->owner->widgetResult);
         } else {
             if(empty(trim($event->result))) {
-                $event->result = Html::tag('div', '', ['id' => $this->owner->id, 'class' => 'yii2-live-widget-empty']);
+                $event->result = Html::tag('div', '', ['id' => $this->id, 'class' => 'yii2-live-widget-empty']);
             }
             $this->setLiveWidgetData($event->result);
         }
@@ -102,7 +109,7 @@ class WidgetBehavior extends Behavior
             'dataHtml' => $this->widgetDataHtml,
             'data' => $this->widgetData,
             'type' => $this->widgetType,
-            'id' => $this->owner->id,
+            'id' => $this->id,
             'insertMethod' => $this->widgetInsertMethod,
         ];
         if(isset($this->widgetStackParent)) {
@@ -121,6 +128,7 @@ class WidgetBehavior extends Behavior
             case static::LIVE_WIDGET_TYPE_HTML:
                 $this->widgetDataHtml = $data;
                 break;
+            case static::LIVE_WIDGET_TYPE_COMMANDS:
             case static::LIVE_WIDGET_TYPE_CONFIGURABLE:
                 $this->widgetData = $data;
                 break;
@@ -141,6 +149,14 @@ class WidgetBehavior extends Behavior
     }
 
     /**
+     * Get widget ID
+     * @return string
+     */
+    public function getId() {
+        return $this->owner->id;
+    }
+
+    /**
      * Get JS configure callback
      * @return null|string
      */
@@ -154,9 +170,9 @@ class WidgetBehavior extends Behavior
      * Widget stack pre processing
      */
     public function preProcessWidgetStack() {
-        static::$widgetStack[] = $this->owner->id;
+        static::$widgetStack[] = $this->id;
         if(isset(static::$widgetStackActive)) $this->widgetStackParent = static::$widgetStackActive;
-        static::$widgetStackActive = $this->owner->id;
+        static::$widgetStackActive = $this->id;
     }
 
     /**
@@ -164,8 +180,51 @@ class WidgetBehavior extends Behavior
      */
     public function postProcessWidgetStack() {
         $widgetId = array_pop(static::$widgetStack);
-        if($widgetId === $this->owner->id) {}
+        if($widgetId === $this->id) {}
         static::$widgetStackActive = isset($this->widgetStackParent) ? $this->widgetStackParent : null;
+    }
+
+    /**
+     * Check that widget state changed
+     * @param array $data
+     * @param bool  $saveState
+     * @return bool
+     */
+    public function checkWidgetState($data = [], $saveState = true) {
+        $this->processWidgetState($data);
+        $oldDataRaw = Yii2Live::getSelf()->getWidgetRequestState($this->id, true);
+        $oldData = isset($oldDataRaw['data']) ? $oldDataRaw['data'] : [];
+        $newHash = md5(json_encode($data, JSON_FORCE_OBJECT + JSON_UNESCAPED_UNICODE));
+        //Yii2Live::getSelf()->commands()->jHtml('.footer > .container', print_r($data, true));
+        if($saveState) {
+            $this->setWidgetState($data);
+        }
+        if(empty($oldData) || !isset($oldData['lang']) || ($data['lang'] !== $oldData['lang'])) {
+            return static::LIVE_WIDGET_STATE_RELOAD;
+        }
+        if(empty($oldDataRaw['hash']) || $newHash !== $oldDataRaw['hash']) {
+            return static::LIVE_WIDGET_STATE_CHANGED;
+        }
+        return static::LIVE_WIDGET_STATE_NOT_CHANGED;
+    }
+
+    /**
+     * Set new widget state
+     * @param array $data
+     */
+    public function setWidgetState($data = []) {
+        $this->processWidgetState($data);
+        Yii2Live::getSelf()->setWidgetRequestState($this->id, $data);
+    }
+
+    /**
+     * Process widget state data
+     * @param array $data
+     * @return array
+     */
+    protected function processWidgetState(&$data = []) {
+        $data['lang'] = Yii::$app->language;
+        return $data;
     }
 
     /**

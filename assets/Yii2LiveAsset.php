@@ -41,6 +41,7 @@ class Yii2LiveAsset extends AssetBundle
             'headerName' => $async->headerName,
             'linkSelector' => $async->linkSelector,
             'formSelector' => $async->formSelector,
+            'requestId' => $async->getRequestId(),
         ];
         $settingsJson = json_encode($settings);
         $jsSettings = new JsExpression("
