@@ -107,6 +107,19 @@ class JsCommand extends Object
     }
 
     /**
+     * $.fn.attr
+     * @param string $selector
+     * @param string $attributeName
+     * @param string $attributeValue
+     * @return JsCommand
+     */
+    public function jAttr($selector = null, $attributeName = null, $attributeValue = null) {
+        $arguments = [$attributeName];
+        if(isset($attributeValue)) $arguments[] = $attributeValue;
+        return $this->jQuery($selector, 'attr', $arguments);
+    }
+
+    /**
      * Begin jQuery chain
      * @return JsCommand
      */
