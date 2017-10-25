@@ -2,6 +2,7 @@
 
 namespace digitv\yii2live\widgets;
 
+use digitv\yii2live\Yii2Live;
 use Yii;
 use yii\bootstrap\Html;
 use yii\bootstrap\Widget;
@@ -39,15 +40,34 @@ class LoadingIndicator extends Widget
     }
 
     /**
+     * Get loading overlay html
+     * @return string
+     */
+    protected function getLoadingOverlay() {
+        $live = Yii2Live::getSelf();
+        if(!$live->enableLoadingOverlay) return '';
+        $iconOptions = ['class' => 'fa ' . $this->faIcon . ' fa-spin'];
+        $icon = Html::tag('i', '', $iconOptions);
+        return Html::tag('div', $icon, [
+            'class' => 'loading-overlay',
+        ]);
+    }
+
+    /**
      * @inheritdoc
      */
     public function run()
     {
-        $content = [
+        Html::addCssClass($this->options, ['yii2-live-loading-indicator']);
+        $messageContent = [
             $this->getLoadingText(),
             $this->getLoader(),
         ];
-        Html::addCssClass($this->options, ['yii2-live-loading-indicator']);
+        $messageArea = Html::tag('div', implode("\n", $messageContent), ['class' => 'message-area']);
+        $content = [
+            $messageArea,
+            $this->getLoadingOverlay(),
+        ];
         return Html::tag('div', implode("\n", $content), $this->options);
     }
 }

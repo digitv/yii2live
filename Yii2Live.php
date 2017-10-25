@@ -4,6 +4,7 @@ namespace digitv\yii2live;
 
 use digitv\yii2live\behaviors\WidgetBehavior;
 use digitv\yii2live\components\JsCommand;
+use digitv\yii2live\components\PageAttributes;
 use digitv\yii2live\components\Request;
 use digitv\yii2live\components\Response;
 use digitv\yii2live\components\View;
@@ -31,6 +32,10 @@ class Yii2Live extends Component implements BootstrapInterface
     public $linkSelector = 'a';
     /** @var string Forms selector for javascript code */
     public $formSelector = 'form';
+    /** @var bool Enable replacing elements animation */
+    public $enableReplaceAnimation = false;
+    /** @var bool Enable replacing elements animation */
+    public $enableLoadingOverlay = true;
     /** @var string Header name used for AJAX requests */
     public $headerName = 'X-Yii2-Live';
 
@@ -149,6 +154,14 @@ class Yii2Live extends Component implements BootstrapInterface
      */
     public function commands() {
         return JsCommand::getInstance();
+    }
+
+    /**
+     * Set or get elements attributes in view
+     * @return PageAttributes
+     */
+    public function attributes() {
+        return PageAttributes::getInstance();
     }
 
     /**
