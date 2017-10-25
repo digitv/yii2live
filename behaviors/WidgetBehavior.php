@@ -195,7 +195,6 @@ class WidgetBehavior extends Behavior
         $oldDataRaw = Yii2Live::getSelf()->getWidgetRequestState($this->id, true);
         $oldData = isset($oldDataRaw['data']) ? $oldDataRaw['data'] : [];
         $newHash = md5(json_encode($data, JSON_FORCE_OBJECT + JSON_UNESCAPED_UNICODE));
-        //Yii2Live::getSelf()->commands()->jHtml('.footer > .container', print_r($data, true));
         if($saveState) {
             $this->setWidgetState($data);
         }
