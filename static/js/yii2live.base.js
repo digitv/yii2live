@@ -4,6 +4,7 @@
     var self = this;
     this.settingsDefault = {
         headerName: "X-Yii2-Live",
+        requestId: "",
         linkSelector: "a",
         formSelector: "form",
         wrapElementClass: 'yii2live-element-ajax-wrapper',
@@ -103,7 +104,7 @@
         };
         this.getDefaultOptions = function () {
             var options = rq.defaultOptions;
-            options.headers[self.settings.headerName] = 'true';
+            options.headers[self.settings.headerName] = self.settings.requestId;
             return options;
         };
 
@@ -149,6 +150,9 @@
                 }
                 if(typeof data.widgets !== "undefined") {
                     self.pageWidgets.process(data.widgets);
+                }
+                if(typeof data.commands !== "undefined") {
+                    self.ajaxCmd.process(data.commands);
                 }
             }
         };
@@ -317,13 +321,19 @@
                 var insertMethod = typeof data.insertMethod !== "undefined" ? data.insertMethod : 'insert';
                 if(typeof data.dataHtml === "undefined" || !widget.length) return;
                 if(insertMethod === "replace") {
-                    self.dom.replaceWith(widget, data.dataHtml, true);
                     //widget.replaceWith(data.dataHtml);
+                    self.dom.replaceWith(widget, data.dataHtml, true);
                 } else {
                     //widget.html(data.dataHtml);
                     self.dom.html(widget, data.dataHtml, true);
                 }
                 widget.trigger(self.events.EVENT_HTML_INSERT);
+            },
+            processConfigurable: function (data) {
+
+            },
+            processCombined: function (data) {
+
             }
         };
     }();
@@ -380,9 +390,7 @@
                 wrapper = element.parent();
                 if(!isNaN(elMarginTop) && elMarginTop) wrapperCss.marginTop = elMarginTop + 'px';
                 if(!isNaN(elMarginBottom) && elMarginBottom) wrapperCss.marginBottom = elMarginBottom + 'px';
-                console.log(elMarginBottom, wrapperCss);
                 wrapper.css(wrapperCss);
-                //element.css({marginTop: 0, marginBottom: 0});
             },
             //Unwrap element
             unwrap: function (element, time) {

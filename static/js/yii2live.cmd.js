@@ -1,12 +1,28 @@
 yii2liveCmd = function (self) {
     return {
+        process: function (commands) {
+            var command, i;
+            for (i in commands) {
+                command = commands[i];
+                this.processCmd(command);
+            }
+        },
         processCmd: function (data) {
             var selector = typeof data.selector !== "undefined" ? data.selector : undefined,
                 type = typeof data.type !== "undefined" ? data.type : 'jQuery',
                 method = typeof data.method !== "undefined" ? data.method : undefined,
-                args = typeof data.args !== "undefined" ? data.args : [];
+                args = typeof data.args !== "undefined" ? data.args : [],
+                i, command, context;
             switch (type) {
                 case 'jQuery':
+                    return this.cmdjQuery(selector, method, args);
+                    break;
+                case 'jQueryChain':
+                    for (i in data.commands) {
+                        command = data.commands[i];
+                        if(typeof context !== "undefined") command.selector = context;
+                        context = this.processCmd(command);
+                    }
                     return this.cmdjQuery(selector, method, args);
                     break;
                 case 'live':
@@ -24,7 +40,7 @@ yii2liveCmd = function (self) {
         //jQuery methods
         cmdjQuery: function (selector, method, args) {
             if(typeof jQuery.fn[method] !== "function") return;
-            var element = $(selector);
+            var element = typeof selector === "object" ? selector : $(selector);
             return jQuery.fn[method].apply(element, args);
         },
         //Helper functions
