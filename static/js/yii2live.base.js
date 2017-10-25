@@ -7,6 +7,7 @@
         requestId: "",
         linkSelector: "a",
         formSelector: "form",
+        enableReplaceAnimation: "form",
         wrapElementClass: 'yii2live-element-ajax-wrapper',
         domainsLocal: [
             '//' + window.location.host, window.location.protocol + '//' + window.location.host
@@ -381,7 +382,8 @@
             },
             //Wrap element
             wrap: function (element) {
-                var wrapperHtml = '<div class="'+self.settings.wrapElementClass+' active"></div>', wrapper,
+                var animateClass = self.settings.enableReplaceAnimation ? ' animated' : '';
+                var wrapperHtml = '<div class="'+self.settings.wrapElementClass+animateClass+' active"></div>', wrapper,
                     elMarginTop = parseInt(element.css('margin-top')), elMarginBottom = parseInt(element.css('margin-bottom')),
                     wrapperCss = {minHeight: element.outerHeight(), maxHeight: element.outerHeight()};
                 //If element or any of parents is wrapped than exit
@@ -394,7 +396,7 @@
             },
             //Unwrap element
             unwrap: function (element, time) {
-                time = typeof time !== "undefined" ? time : 400;
+                time = typeof time !== "undefined" ? time : 800;
                 var wrapper = element.parent().filter('.' + self.settings.wrapElementClass),
                     wH, wSh, elCss = {},
                     wMarginTop = parseInt(element.css('margin-top')), wMarginBottom = parseInt(element.css('margin-bottom'));
@@ -406,13 +408,18 @@
                     wrapper.css({maxHeight: wSh});
                 }
                 wrapper.removeClass('active');
-                setTimeout(function () {
+                var unwrapCallback = function () {
                     wrapper.removeAttr('style');
                     if(!isNaN(wMarginTop) && wMarginTop) elCss.marginTop = wMarginTop;
                     if(!isNaN(wMarginBottom) && wMarginBottom) elCss.marginBottom = wMarginBottom;
                     element.css(elCss);
                     element.unwrap('.' + self.settings.wrapElementClass);
-                }, time);
+                };
+                if(self.settings.enableReplaceAnimation) {
+                    setTimeout(unwrapCallback, time);
+                } else {
+                    unwrapCallback();
+                }
             }
         };
     }();

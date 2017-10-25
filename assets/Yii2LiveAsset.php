@@ -36,12 +36,13 @@ class Yii2LiveAsset extends AssetBundle
      */
     public function registerAssetFiles($view)
     {
-        $async = Yii2Live::getSelf();
+        $live = Yii2Live::getSelf();
         $settings = [
-            'headerName' => $async->headerName,
-            'linkSelector' => $async->linkSelector,
-            'formSelector' => $async->formSelector,
-            'requestId' => $async->getRequestId(),
+            'headerName' => $live->headerName,
+            'linkSelector' => $live->linkSelector,
+            'formSelector' => $live->formSelector,
+            'enableReplaceAnimation' => $live->enableReplaceAnimation,
+            'requestId' => $live->getRequestId(),
         ];
         $settingsJson = json_encode($settings);
         $jsSettings = new JsExpression("
