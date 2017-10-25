@@ -42,8 +42,14 @@ class Response extends \yii\web\Response
         /** @var View $view */
         $view = Yii::$app->view;
         /** TODO: remove this */
-        $this->livePageWidgets = ArrayHelper::merge($this->livePageWidgets, $view->livePageBlocks);
+        $this->livePageWidgets = ArrayHelper::merge($this->livePageWidgets, $view->livePageWidgets);
         $jsCmd = $component->commands();
+        $jsAttributes = $component->attributes()->getAttributesForJs();
+        if(!empty($jsAttributes)) {
+            foreach ($jsAttributes as $selector => $attributes) {
+                $jsCmd->jAttr($selector, $attributes);
+            }
+        }
         $this->liveCommands = ArrayHelper::merge($this->liveCommands, $jsCmd->commands);
         $data = [
             'meta' => $view->livePageMeta,

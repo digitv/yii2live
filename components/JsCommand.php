@@ -108,8 +108,10 @@ class JsCommand extends Object
 
     /**
      * $.fn.attr
+     * $cmd->jAttr('a', 'href', '/') OR
+     * $cmd->jAttr('a', ['href' => '/'])
      * @param string $selector
-     * @param string $attributeName
+     * @param string|array $attributeName
      * @param string $attributeValue
      * @return JsCommand
      */
