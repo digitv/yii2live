@@ -2,7 +2,7 @@
     "name": "digitv/yii2live",
     "version": "1.0.0",
     "description": "Yii2 Live package",
-    "keywords": ["yii2", "ajax", "async", "live", "node.js"],
+    "keywords": ["yii2", "ajax", "live", "node.js"],
     "type": "yii2-extension",
     "license": "MIT",
     "support": {
