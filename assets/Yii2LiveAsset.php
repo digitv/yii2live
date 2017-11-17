@@ -38,6 +38,7 @@ class Yii2LiveAsset extends AssetBundle
     {
         $live = Yii2Live::getSelf();
         $settings = [
+            'enableLiveLoad' => $live->enableLiveLoad,
             'headerName' => $live->headerName,
             'linkSelector' => $live->linkSelector,
             'formSelector' => $live->formSelector,

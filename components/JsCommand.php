@@ -12,7 +12,7 @@ use yii\base\Object;
  * @property array $stack
  * @property array $commands
  */
-class JsCommand extends Object
+class JsCommand extends Object implements ResponseObject
 {
     const CMD_TYPE_JQUERY           = 'jQuery';
     const CMD_TYPE_JQUERY_CHAIN     = 'jQueryChain';
@@ -329,5 +329,24 @@ class JsCommand extends Object
             static::$instance = new static($config);
         }
         return static::$instance;
+    }
+
+
+    /**
+     * Get data for Response
+     * @return array
+     */
+    public function getResponseData()
+    {
+        return [];
+    }
+
+    /**
+     * Get Response format
+     * @return string
+     */
+    public function getResponseType()
+    {
+        return Response::FORMAT_JSON;
     }
 }

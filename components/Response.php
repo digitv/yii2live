@@ -36,13 +36,11 @@ class Response extends \yii\web\Response
     }
 
     public function prepareAsync() {
+        if(!$this->checkData()) return;
         $component = Yii2Live::getSelf();
-        if(!$component->isLiveRequest()) return;
         $responseData = $this->data;
         /** @var View $view */
         $view = Yii::$app->view;
-        /** TODO: remove this */
-        $this->livePageWidgets = ArrayHelper::merge($this->livePageWidgets, $view->livePageWidgets);
         $jsCmd = $component->commands();
         $jsAttributes = $component->attributes()->getAttributesForJs();
         if(!empty($jsAttributes)) {
@@ -58,16 +56,32 @@ class Response extends \yii\web\Response
         ];
         if(is_array($responseData)) {
             $data['content'] = $responseData;
+        } elseif ($this->data instanceof ResponseObject) {
+            $data['content'] = $this->data->getResponseData();
+            $this->data = [];
         } else {
             $data['contentHtml'] = $responseData;
         }
         $this->data = $data;
     }
 
+    /**
+     * Set Response format
+     */
     public function setAsyncFormat() {
-        $async = Yii2Live::getSelf();
-        if($async->isLiveRequest()) {
-            $this->format = self::FORMAT_JSON;
+        if($this->checkData()) {
+            $this->format = $this->data instanceof ResponseObject ? $this->data->getResponseType() : self::FORMAT_JSON;
         }
+    }
+
+    /**
+     * Check that we can handle response
+     * @return bool
+     */
+    protected function checkData() {
+        $component = Yii2Live::getSelf();
+        $isLiveRequest = $component->isLiveRequest();
+        $isJsCommand = $this->data instanceof ResponseObject;
+        return $isLiveRequest || $isJsCommand;
     }
 }

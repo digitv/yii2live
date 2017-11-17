@@ -25,7 +25,9 @@ class Yii2Live extends Component implements BootstrapInterface
     const SESSION_WIDGETS_KEY = 'yii2live-widgets-data';
 
     /** @var bool Global enabled flag */
-    public $enabled = true;
+    public $enable = true;
+    /** @var bool Enable page loading by ajax */
+    public $enableLiveLoad = true;
     /** @var bool Use Node.js sockets to send response */
     public $useNodeJsTransport = false;
     /** @var string Links selector for javascript code */
@@ -62,7 +64,7 @@ class Yii2Live extends Component implements BootstrapInterface
      */
     public function bootstrap($app)
     {
-        if(!$this->enabled) return;
+        if(!$this->enable) return;
         Yii::setAlias('@yii2live', __DIR__);
         $components = $app->getComponents(true);
         $requestDefinition = isset($components['request']) ? $components['request'] : [];

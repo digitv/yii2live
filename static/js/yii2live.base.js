@@ -8,6 +8,7 @@
         linkSelector: "a",
         formSelector: "form",
         enableReplaceAnimation: "form",
+        enableLiveLoad: false,
         wrapElementClass: 'yii2live-element-ajax-wrapper',
         domainsLocal: [
             '//' + window.location.host, window.location.protocol + '//' + window.location.host
@@ -431,7 +432,9 @@
         if(self.utils.isPushStateSupported()) {
             window.addEventListener('popstate', self.callbacks.popStateChange);
         }
-        $(document).on('click', self.settings.linkSelector, self.callbacks.linkClick);
+        if(self.settings.enableLiveLoad) {
+            $(document).on('click', self.settings.linkSelector, self.callbacks.linkClick);
+        }
     };
 
     //Constructor

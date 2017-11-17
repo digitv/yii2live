@@ -32,7 +32,6 @@ class View extends \yii\web\View
     const LIVE_DATA_CALLBACK_CSRF      = 'processCsrf';
 
     public $livePageMeta    = [];
-    public $livePageWidgets = [];
 
     /**
      * @inheritdoc
