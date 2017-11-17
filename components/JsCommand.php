@@ -17,6 +17,7 @@ class JsCommand extends Object implements ResponseObject
     const CMD_TYPE_JQUERY           = 'jQuery';
     const CMD_TYPE_JQUERY_CHAIN     = 'jQueryChain';
     const CMD_TYPE_LIVE             = 'live';
+    const CMD_TYPE_PJAX             = 'pjax';
 
     protected $chainActive = false;
 
@@ -247,6 +248,33 @@ class JsCommand extends Object implements ResponseObject
             'selector' => $selector,
             'method' => $method,
             'args' => $arguments,
+        ];
+        return $this->addCommand($command);
+    }
+
+    /**
+     * $.pjax.reload()
+     * @param array|string $params
+     */
+    public function pjaxReload($params) {
+        if(is_string($params)) {
+            $params = ['container' => $params];
+        }
+        if(!is_array($params)) $params = (array)$params;
+        $this->Pjax('reload', $params);
+    }
+
+    /**
+     * Pjax command
+     * @param string $method
+     * @param array  $params
+     * @return JsCommand
+     */
+    public function Pjax($method, $params = []) {
+        $command = [
+            'type' => static::CMD_TYPE_PJAX,
+            'method' => $method,
+            'args' => [$params],
         ];
         return $this->addCommand($command);
     }

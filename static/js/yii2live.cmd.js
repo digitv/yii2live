@@ -25,6 +25,9 @@ yii2liveCmd = function (self) {
                     }
                     return this.cmdjQuery(selector, method, args);
                     break;
+                case 'pjax':
+                    return this.cmdPjax(method, args);
+                    break;
                 case 'live':
                     return this.cmdLive(method, args);
                     break;
@@ -42,6 +45,11 @@ yii2liveCmd = function (self) {
             if(typeof jQuery.fn[method] !== "function") return;
             var element = typeof selector === "object" ? selector : $(selector);
             return jQuery.fn[method].apply(element, args);
+        },
+        //Pjax methods
+        cmdPjax: function (method, args) {
+            if(typeof jQuery.pjax === "undefined" || typeof jQuery.pjax[method] !== "function") return;
+            return jQuery.pjax[method].apply(null, args);
         },
         //Helper functions
         getFunctionRecursive: function (baseObject, methodChain) {
