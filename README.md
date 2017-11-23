@@ -1,6 +1,6 @@
 # Yii2live SANDBOX project!
 
-##_Config options_
+### _Config options_
 
 |Option |Description          |
 |---|---|
