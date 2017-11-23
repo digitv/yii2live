@@ -95,7 +95,7 @@ yii2liveCmd = function (self) {
             var visibleModal;
             if(typeof selector === "undefined" || selector === null) {
                 visibleModal = $('.modal:visible:first');
-                return visibleModal.length ? visibleModal : jQuery(self.settings.modalSelector);
+                return visibleModal.length ? visibleModal : jQuery(self.settings.modalDefaultSelector);
             }
             return jQuery(selector);
         },

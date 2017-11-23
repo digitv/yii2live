@@ -4,12 +4,22 @@
     var self = this;
     this.settingsDefault = {
         headerName: "X-Yii2-Live",
+        headerNameContext: "X-Yii2-Live-Context",
+        enableLiveLoad: false,
+        enableReplaceAnimation: false,
         requestId: "",
         linkSelector: "a",
+        linkSelectorAjax: "a[data-live-context], a[data-live-enabled]",
         formSelector: "form",
-        enableReplaceAnimation: "form",
-        enableLiveLoad: false,
+        formSelectorAjax: "form[data-live-context], form[data-live-enabled]",
+        modalDefaultSelector: '#modal-general',
         wrapElementClass: 'yii2live-element-ajax-wrapper',
+        messageAdapter: 'alert',
+        contexts: {
+            page: 'page',
+            modal: 'modal',
+            parent: 'parent'
+        },
         domainsLocal: [
             '//' + window.location.host, window.location.protocol + '//' + window.location.host
         ]
@@ -18,6 +28,7 @@
         EVENT_HTML_INSERT: 'yii2live:html',
         EVENT_WIDGETS_LOADED: 'yii2live:widgetsLoaded'
     };
+    this.activeElement = undefined;
     this.pushStateSupported = undefined;
     this.settings = {};
 
@@ -55,6 +66,44 @@
                     self.pushStateSupported = !!(history && history.pushState);
                 }
                 return self.pushStateSupported;
+            },
+            getElementActive: function () {
+                return typeof self.activeElement !== "undefined" && self.activeElement.length ? self.activeElement : undefined;
+            },
+            setElementActive: function (element) {
+                if(typeof element !== "undefined" && element.length) self.activeElement = element;
+                else self.activeElement = undefined;
+            },
+            getElementContext: function (element) {
+                if(typeof element === "undefined" || !element.length) return self.settings.contexts.page;
+                var elemContext = element.data('liveContext'), elemParent;
+                if(typeof elemContext !== "string" || $.trim(elemContext) === "") return self.settings.contexts.page;
+                if(elemContext === self.settings.contexts.parent) {
+                    elemParent = element.parents('.yii2-live-widget:first');
+                    if(elemParent.length) return elemParent.attr('id');
+                }
+                return elemContext;
+            },
+            getElementOptions: function (element) {
+                var elemData;
+                var options = {
+                    context: self.settings.contexts.page,
+                    pushState: true
+                };
+                if(typeof element === "undefined" && !element.length) return options;
+                elemData = element.data();
+                options.context = self.utils.getElementContext(element);
+                //Disable pushState for POST requests
+                if(typeof elemData.requestMethod !== "undefined" && elemData.requestMethod.toLowerCase() === "post") {
+                    options.pushState = false;
+                //Disable pushState for modal context
+                } else if(options.context === self.settings.contexts.modal) {
+                    options.pushState = false;
+                //Disable/enable pushState depending on element data attributes
+                } else {
+                    options.pushState = typeof elemData.livePushState !== "undefined" ? !!elemData.livePushState : true;
+                }
+                return options;
             }
         }
     }();
@@ -63,11 +112,13 @@
     this.callbacks = function () {
         return {
             linkClick: function (e) {
-                var link = $(this), href = link.attr('href');
+                var link = $(this), href = link.attr('href'),
+                    ajaxMethod = link.data('requestMethod') || 'get';
                 if(!self.utils.isLocalUrl(href)) return;
                 if(link.attr('target') === "_blank" || link.attr('data-live') === "0") return;
                 e.preventDefault();
-                self.request.ajax(href, {method: 'get'});
+                self.request.ajax(href, {method: ajaxMethod}, link);
+                return false;
             },
             popStateChange: function (e) {
                 if(typeof e.state === "undefined" || e.state === null) {
@@ -75,17 +126,24 @@
                 }
             },
             ajaxSuccess: function (response, statusText, xhr) {
+                var element = self.utils.getElementActive(), pushUrl = window.location.href, elementOptions = self.utils.getElementOptions(element);
                 self.response.processData(response);
-                self.request.pushState(null, null, window.location.pathname, true);
+                if(elementOptions.pushState) {
+                    self.request.pushState(null, null, pushUrl, true);
+                }
                 console.log('ajaxSuccess');
             },
             ajaxError: function (xhr, statusText) {
                 if(xhr.statusText === "abort") return;
-                history.back();
+                var element = self.utils.getElementActive(), elementOptions = self.utils.getElementOptions(element);
+                if(elementOptions.pushState) {
+                    history.back();
+                }
                 console.error('ajaxError', xhr, xhr.status);
             },
             ajaxComplete: function (xhr, statusText) {
                 self.loader.deActivate();
+                self.utils.setElementActive();
                 //console.log('ajaxComplete');
             }
         };
@@ -111,16 +169,20 @@
         };
 
         return {
-            ajax: function (url, options) {
+            ajax: function (url, options, element) {
+                var elementOptions;
                 self.request.ajaxAbort();
                 self.loader.activate();
                 if(typeof url === "undefined") {
                     console.error('Required parameter `url` is missing'); return;
                 }
-                if(self.utils.isPushStateSupported()) {
+                if(typeof element !== "undefined") self.activeElement = element;
+                elementOptions = self.utils.getElementOptions(element);
+                if(elementOptions.pushState && self.utils.isPushStateSupported()) {
                     self.request.pushState(null, null, url);
                 }
                 options = $.extend({}, rq.getDefaultOptions(), options);
+                options.headers[self.settings.headerNameContext] = elementOptions.context;
                 rq.ajaxRequest = $.ajax(url, options);
             },
             ajaxAbort: function () {
@@ -160,7 +222,7 @@
         };
     }();
 
-    //Response
+    //Loading animation
     this.loader = function () {
         return {
             getElem: function () {
@@ -177,6 +239,7 @@
         };
     }();
 
+    //Page meta data
     this.pageMeta = function () {
         return {
             process: function (data) {
@@ -304,6 +367,7 @@
         };
     }();
 
+    //Page widgets
     this.pageWidgets = function () {
         return {
             process: function (data) {
@@ -340,6 +404,8 @@
         };
     }();
 
+    //Dom manipulations
+    //TODO: Remove this
     this.dom = function () {
         return {
             //$.fn.replaceWith
@@ -429,12 +495,24 @@
 
     //Init callback
     this.init = function () {
+        var linksSelector = self.settings.enableLiveLoad ? self.settings.linkSelector + ', ' + self.settings.linkSelectorAjax : self.settings.linkSelectorAjax;
         if(self.utils.isPushStateSupported()) {
             window.addEventListener('popstate', self.callbacks.popStateChange);
         }
-        if(self.settings.enableLiveLoad) {
-            $(document).on('click', self.settings.linkSelector, self.callbacks.linkClick);
-        }
+        //Links click
+        $(document).on('click', linksSelector, function (e) {
+            var link = $(this), confirm = link.data('confirmMessage'), href = link.attr('href');
+            if(!self.utils.isLocalUrl(href)) return;
+            if(link.attr('target') === "_blank" || link.attr('data-live') === "0") return;
+            e.preventDefault();
+            if(confirm) {
+                yii.confirm(confirm, function () {
+                    return self.callbacks.linkClick.apply(link, [e]);
+                }, function () {});
+            } else {
+                return self.callbacks.linkClick.apply(link, [e]);
+            }
+        });
     };
 
     //Constructor
