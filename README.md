@@ -14,5 +14,5 @@
 |linkSelectorAjax       |_jQuery selector for links_|
 |formSelector           |_jQuery selector for forms (only when `enableLiveLoad` active)_|
 |formSelectorAjax       |_jQuery selector for forms_|
-|messageAdapter         |_Name of message adapter (used to show messages for user)_|
+|messageAdapter         |_Name of message adapter. Used to show messages for user (`alert` or `notify`)_|
 |modalDefaultSelector   |_jQuery selector for default modal popup_|
