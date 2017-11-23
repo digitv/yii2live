@@ -104,6 +104,22 @@
                     options.pushState = typeof elemData.livePushState !== "undefined" ? !!elemData.livePushState : true;
                 }
                 return options;
+            },
+            //Add location data fields to form
+            formLocationDataAdd: function (form) {
+                var data = {}, field;
+                data.url = window.location.href;
+                data.query = window.location.search;
+                for (var i in data) {
+                    field = jQuery('<input type="hidden" class="location-data-field" name="_locationData['+i+']" value="">');
+                    field.val(data[i]);
+                    form.append(field);
+                }
+                return data;
+            },
+            //Remove location data fields from form
+            formLocationDataRemove: function (form) {
+                form.find('.location-data-field').remove();
             }
         }
     }();
@@ -119,6 +135,17 @@
                 e.preventDefault();
                 self.request.ajax(href, {method: ajaxMethod}, link);
                 return false;
+            },
+            formSubmit: function (e) {
+                var form = $(this), url = form.attr('action'), method = form.attr('method') || 'post', data, formData;
+                self.utils.formLocationDataAdd(form);
+                formData = method.toLowerCase() === "post" ? new FormData(form[0]) : form.serialize();
+                self.utils.formLocationDataRemove(form);
+                data = {
+                    method: method,
+                    data: formData
+                };
+                self.request.ajax(url, data, form);
             },
             popStateChange: function (e) {
                 if(typeof e.state === "undefined" || e.state === null) {
@@ -183,6 +210,13 @@
                 }
                 options = $.extend({}, rq.getDefaultOptions(), options);
                 options.headers[self.settings.headerNameContext] = elementOptions.context;
+                //Set contentType and processData to false if FormData passed as `data` parameter
+                if(typeof options.data !== "undefined" && options.data.toString() === '[object FormData]') {
+                    $.extend(options.data, {
+                        contentType: false,
+                        processData: false
+                    });
+                }
                 rq.ajaxRequest = $.ajax(url, options);
             },
             ajaxAbort: function () {
@@ -495,7 +529,12 @@
 
     //Init callback
     this.init = function () {
-        var linksSelector = self.settings.enableLiveLoad ? self.settings.linkSelector + ', ' + self.settings.linkSelectorAjax : self.settings.linkSelectorAjax;
+        var linksSelector = self.settings.enableLiveLoad
+            ? self.settings.linkSelector + ', ' + self.settings.linkSelectorAjax
+            : self.settings.linkSelectorAjax,
+            formSelector = self.settings.enableLiveLoad
+                ? self.settings.formSelector + ', ' + self.settings.formSelectorAjax
+                : self.settings.formSelectorAjax;
         if(self.utils.isPushStateSupported()) {
             window.addEventListener('popstate', self.callbacks.popStateChange);
         }
@@ -512,6 +551,20 @@
             } else {
                 return self.callbacks.linkClick.apply(link, [e]);
             }
+        });
+        //Form submit
+        $(document).on('beforeSubmit', formSelector, function (e) {
+            var form = $(this), confirm = form.data('confirmMessage');
+            //e.preventDefault();
+            if(confirm) {
+                yii.confirm(confirm, function () {
+                    return self.callbacks.formSubmit.apply(link, [e]);
+                }, function () {});
+            } else {
+                return self.callbacks.formSubmit.apply(link, [e]);
+            }
+        }).on('submit', function (e) {
+            e.preventDefault();
         });
     };
 
