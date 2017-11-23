@@ -24,27 +24,48 @@ class Yii2Live extends Component implements BootstrapInterface
 {
     const SESSION_WIDGETS_KEY = 'yii2live-widgets-data';
 
+    const CONTEXT_TYPE_PAGE     = 'page';
+    const CONTEXT_TYPE_MODAL    = 'modal';
+    const CONTEXT_TYPE_EXACT    = 'exact';
+    //used only for JS
+    const CONTEXT_TYPE_PARENT   = 'parent';
+
     /** @var bool Global enabled flag */
     public $enable = true;
     /** @var bool Enable page loading by ajax */
     public $enableLiveLoad = true;
-    /** @var bool Use Node.js sockets to send response */
-    public $useNodeJsTransport = false;
+    /** @var string Header name used for AJAX requests */
+    public $headerName = 'X-Yii2-Live';
+    /** @var string Header name used for AJAX request context */
+    public $headerNameContext = 'X-Yii2-Live-Context';
     /** @var string Links selector for javascript code */
     public $linkSelector = 'a';
+    /** @var string Links selector for javascript code (default, when live load disabled, to handle AJAX commands) */
+    public $linkSelectorAjax = 'a[data-live-context], a[data-live-enabled]';
     /** @var string Forms selector for javascript code */
     public $formSelector = 'form';
+    /** @var string Forms selector for javascript code (default, when live load disabled) */
+    public $formSelectorAjax = 'form[data-live-context], form[data-live-enabled]';
     /** @var bool Enable replacing elements animation */
     public $enableReplaceAnimation = false;
     /** @var bool Enable replacing elements animation */
     public $enableLoadingOverlay = true;
-    /** @var string Header name used for AJAX requests */
-    public $headerName = 'X-Yii2-Live';
+    /** @var string User messages adapter */
+    public $messageAdapter = 'alert';
+    /** @var string Default modal selector */
+    public $modalDefaultSelector = '#modal-default';
+
+    /** @var bool Use Node.js sockets to send response */
+    public $useNodeJsTransport = false;
 
     /** @var bool */
     protected $_isLiveRequest;
     /** @var string */
     protected $_requestId;
+    /** @var string */
+    protected $_requestContextType;
+    /** @var string */
+    protected $_requestContext;
     /** @var self */
     protected static $self;
 
@@ -148,6 +169,39 @@ class Yii2Live extends Component implements BootstrapInterface
             $this->_requestId = $requestId;
         }
         return $this->_requestId;
+    }
+
+    /**
+     * Get context type
+     * @return string
+     */
+    public function getContextType() {
+        if(!isset($this->_requestContextType)) {
+            /** @var Request $request */
+            $request = Yii::$app->request;
+            $context = $request->getRequestContext();
+            if(in_array($context, [static::CONTEXT_TYPE_PAGE, static::CONTEXT_TYPE_MODAL])) {
+                $this->_requestContextType = $context;
+            } else {
+                $this->_requestContextType = static::CONTEXT_TYPE_EXACT;
+            }
+        }
+        return $this->_requestContextType;
+    }
+
+    /**
+     * Get context ID
+     * @return null|string
+     */
+    public function getContextId() {
+        if(!isset($this->_requestContext)) {
+            /** @var Request $request */
+            $request = Yii::$app->request;
+            $contextType = $this->getContextType();
+            if($contextType === static::CONTEXT_TYPE_EXACT) $this->_requestContext = $request->getRequestContext();
+            else $this->_requestContext = false;
+        }
+        return $this->_requestContext !== false ? $this->_requestContext : null;
     }
 
     /**
