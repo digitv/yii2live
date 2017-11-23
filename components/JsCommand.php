@@ -18,6 +18,8 @@ class JsCommand extends Object implements ResponseObject
     const CMD_TYPE_JQUERY_CHAIN     = 'jQueryChain';
     const CMD_TYPE_LIVE             = 'live';
     const CMD_TYPE_PJAX             = 'pjax';
+    const CMD_TYPE_MODAL            = 'modal';
+    const CMD_TYPE_MESSAGE          = 'message';
 
     protected $chainActive = false;
 
@@ -183,7 +185,7 @@ class JsCommand extends Object implements ResponseObject
     public function jHide($selector = null) {
         $args = func_get_args();
         array_shift($args);
-        return $this->jQuery($selector, 'remove', $args);
+        return $this->jQuery($selector, 'hide', $args);
     }
 
     /**
@@ -255,13 +257,14 @@ class JsCommand extends Object implements ResponseObject
     /**
      * $.pjax.reload()
      * @param array|string $params
+     * @return JsCommand
      */
     public function pjaxReload($params) {
         if(is_string($params)) {
-            $params = ['container' => $params];
+            $params = ['container' => $params, 'timeout' => 10000];
         }
         if(!is_array($params)) $params = (array)$params;
-        $this->Pjax('reload', $params);
+        return $this->Pjax('reload', $params);
     }
 
     /**
@@ -290,6 +293,133 @@ class JsCommand extends Object implements ResponseObject
             'type' => static::CMD_TYPE_LIVE,
             'method' => $method,
             'args' => $arguments,
+        ];
+        return $this->addCommand($command);
+    }
+
+    /**
+     * Modal - change body
+     * @param string $content
+     * @param string $selector
+     * @return JsCommand
+     */
+    public function modalBody($content, $selector = null) {
+        return $this->modal($selector, 'body', [$content]);
+    }
+
+    /**
+     * Modal - change title
+     * @param string $title
+     * @param string $selector
+     * @return JsCommand
+     */
+    public function modalTitle($title = null, $selector = null) {
+        if(!isset($title) && isset(Yii::$app->view->title)) $title = Yii::$app->view->title;
+        elseif(!isset($title)) return $this;
+        return $this->modal($selector, 'title', [$title]);
+    }
+
+    /**
+     * Modal - close
+     * @param string $selector
+     * @return JsCommand
+     */
+    public function modalClose($selector = null) {
+        return $this->modal($selector, 'hide');
+    }
+
+    /**
+     * Modal - open
+     * @param string $selector
+     * @return JsCommand
+     */
+    public function modalOpen($selector = null) {
+        return $this->modal($selector, 'show');
+    }
+
+    /**
+     * Bootstrap modal command
+     * @param string $selector
+     * @param string $method
+     * @param array $arguments
+     * @return JsCommand
+     */
+    public function modal($selector, $method = null, $arguments = []) {
+        if(!isset($method)) { return $this; }
+        $command = [
+            'type' => static::CMD_TYPE_MODAL,
+            'selector' => $selector,
+            'method' => $method,
+            'args' => $arguments,
+        ];
+        return $this->addCommand($command);
+    }
+
+    /**
+     * Show status message
+     * @param string $text
+     * @return JsCommand
+     */
+    public function messageStatus($text) {
+        return $this->messageSuccess($text);
+    }
+
+    /**
+     * Show error message
+     * @param string $text
+     * @return JsCommand
+     */
+    public function messageError($text) {
+        return $this->messageDanger($text);
+    }
+
+    /**
+     * Show success message
+     * @param string $text
+     * @return JsCommand
+     */
+    public function messageSuccess($text) {
+        return $this->messageAdd($text, 'success');
+    }
+
+    /**
+     * Show info message
+     * @param string $text
+     * @return JsCommand
+     */
+    public function messageInfo($text) {
+        return $this->messageAdd($text, 'info');
+    }
+
+    /**
+     * Show warning message
+     * @param string $text
+     * @return JsCommand
+     */
+    public function messageWarning($text) {
+        return $this->messageAdd($text, 'warning');
+    }
+
+    /**
+     * Show danger message
+     * @param string $text
+     * @return JsCommand
+     */
+    public function messageDanger($text) {
+        return $this->messageAdd($text, 'danger');
+    }
+
+    /**
+     * Show message to user
+     * @param string $text
+     * @param string $type
+     * @return JsCommand
+     */
+    public function messageAdd($text, $type = 'success') {
+        $command = [
+            'type' => static::CMD_TYPE_MESSAGE,
+            'method' => 'show',
+            'args' => [$text, $type],
         ];
         return $this->addCommand($command);
     }
