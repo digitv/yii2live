@@ -2,8 +2,8 @@
 
 ### _Config options_
 
-|Option |Description          |
-|---|---|
+|Option                 |Description|
+|---                    |---        |
 |enable                 |_Global enabled flag_|
 |enableLiveLoad         |_Enable "live" request for each link and form_|
 |enableReplaceAnimation |_Enable replace animation for each widget_|
