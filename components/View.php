@@ -72,8 +72,6 @@ class View extends \yii\web\View
 
         $this->livePageMeta = $this->getLivePageMeta();
 
-        //echo 'xxx'; return [];
-
         echo strtr($content, [
             self::PH_HEAD => $this->renderHeadHtml(),
             self::PH_BODY_BEGIN => $this->renderBodyBeginHtml(),
@@ -89,12 +87,6 @@ class View extends \yii\web\View
      */
     public function getLivePageMeta() {
         $data = [];
-        //Title
-        if($this->title) {
-            $data[] = self::buildJsProcessRow(self::LIVE_DATA_CALLBACK_TITLE, $this->title);
-        }
-        //CSRF
-        $data[] = self::buildJsProcessRow(self::LIVE_DATA_CALLBACK_CSRF, Yii::$app->request->csrfParam, Yii::$app->request->csrfToken);
         //CSS
         $cssData = [];
         if (!empty($this->cssFiles)) {
@@ -107,17 +99,25 @@ class View extends \yii\web\View
         if (!empty($cssData)) {
             $data[] = self::buildJsProcessRow(self::LIVE_DATA_CALLBACK_CSS, $cssData);
         }
-        //Meta tags
-        if (!empty($this->metaTags)) {
-            $data[] = self::buildJsProcessRow(self::LIVE_DATA_CALLBACK_META, ['items' => $this->metaTags]);
-        }
-        //Link tags
-        if (!empty($this->linkTags)) {
-            $linksData = [
-                'items' => $this->linkTags,
-                'order' => array_keys($this->linkTags),
-            ];
-            $data[] = self::buildJsProcessRow(self::LIVE_DATA_CALLBACK_LINKS, $linksData);
+        if(static::needMetaTags()) {
+            //Title
+            if($this->title) {
+                $data[] = self::buildJsProcessRow(self::LIVE_DATA_CALLBACK_TITLE, $this->title);
+            }
+            //CSRF
+            $data[] = self::buildJsProcessRow(self::LIVE_DATA_CALLBACK_CSRF, Yii::$app->request->csrfParam, Yii::$app->request->csrfToken);
+            //Meta tags
+            if (!empty($this->metaTags)) {
+                $data[] = self::buildJsProcessRow(self::LIVE_DATA_CALLBACK_META, ['items' => $this->metaTags]);
+            }
+            //Link tags
+            if (!empty($this->linkTags)) {
+                $linksData = [
+                    'items' => $this->linkTags,
+                    'order' => array_keys($this->linkTags),
+                ];
+                $data[] = self::buildJsProcessRow(self::LIVE_DATA_CALLBACK_LINKS, $linksData);
+            }
         }
         //Javascript
         $dataJs = $this->getAsyncScripts();
@@ -201,8 +201,7 @@ class View extends \yii\web\View
     protected function renderBodyBeginHtml()
     {
         $lines = [];
-        $regionFiles = self::getPageRegion(self::POS_BEGIN);
-        $regionInline = self::getPageRegion(self::POS_BEGIN, 'js', true);
+        $regionFiles = self::getPageRegion(self::POS_BEGIN, 'js');
         if (!empty($this->jsFiles[self::POS_BEGIN])) {
             $lines[] = implode("\n", $this->jsFiles[self::POS_BEGIN]);
         }
@@ -247,11 +246,7 @@ class View extends \yii\web\View
             $jsInline = [];
             $jsLines  = [];
             if (!empty($this->jsFiles[self::POS_END])) {
-                //$temp = implode("\n", $this->jsFiles[self::POS_END]);
-                //$lines[] = Html::tag('div', $temp, ['data-live-region' => self::getPageRegion(self::POS_END)]);
                 $jsLines[] = implode("\n", $this->jsFiles[self::POS_END]);
-            } else {
-                //$lines[] = Html::tag('div', "\n", ['data-live-region' => self::getPageRegion(self::POS_END)]);
             }
             if (!empty($this->js[self::POS_END])) {
                 $jsInline[] = Html::script(implode("\n", $this->js[self::POS_END]), ['type' => 'text/javascript']);
@@ -271,9 +266,11 @@ class View extends \yii\web\View
         }
 
         //Add loading indicator
-        $lines[] = LoadingIndicator::widget([
-            'id' => 'yii2-live-loader',
-        ]);
+        if(!Yii::$app->request->isAjax) {
+            $lines[] = LoadingIndicator::widget([
+                'id' => 'yii2-live-loader',
+            ]);
+        }
 
         return empty($lines) ? '' : implode("\n", $lines);
     }
@@ -321,5 +318,14 @@ class View extends \yii\web\View
     protected static function getPageRegion($viewPosition = self::POS_HEAD, $type = 'js', $inline = false) {
         $subtype = $inline ? 'inline' : 'files';
         return $viewPosition . '--' . $type . '-' . $subtype;
+    }
+
+    /**
+     * Check that need to return meta tags
+     * @return bool
+     */
+    protected static function needMetaTags() {
+        $contextType = Yii2Live::getSelf()->getContextType();
+        return $contextType === Yii2Live::CONTEXT_TYPE_PAGE;
     }
 }
