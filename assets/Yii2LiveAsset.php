@@ -38,12 +38,24 @@ class Yii2LiveAsset extends AssetBundle
     {
         $live = Yii2Live::getSelf();
         $settings = [
-            'enableLiveLoad' => $live->enableLiveLoad,
             'headerName' => $live->headerName,
-            'linkSelector' => $live->linkSelector,
-            'formSelector' => $live->formSelector,
+            'headerNameContext' => $live->headerNameContext,
+            'enableLiveLoad' => $live->enableLiveLoad,
             'enableReplaceAnimation' => $live->enableReplaceAnimation,
             'requestId' => $live->getRequestId(),
+            'linkSelector' => $live->linkSelector,
+            'linkSelectorAjax' => $live->linkSelectorAjax,
+            'formSelector' => $live->formSelector,
+            'formSelectorAjax' => $live->formSelectorAjax,
+            'modalDefaultSelector' => $live->modalDefaultSelector,
+
+            'messageAdapter' => $live->messageAdapter,
+
+            'contexts' => [
+                'page' => Yii2Live::CONTEXT_TYPE_PAGE,
+                'modal' => Yii2Live::CONTEXT_TYPE_MODAL,
+                'parent' => Yii2Live::CONTEXT_TYPE_PARENT,
+            ],
         ];
         $settingsJson = json_encode($settings);
         $jsSettings = new JsExpression("
