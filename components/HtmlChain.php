@@ -4,7 +4,7 @@ namespace digitv\yii2live\components;
 
 use digitv\yii2live\Yii2Live;
 use yii\base\Object;
-use yii\bootstrap\Html;
+use yii\bootstrap\Html as bsHtml;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Inflector;
 
@@ -13,7 +13,9 @@ use yii\helpers\Inflector;
  */
 class HtmlChain extends Object
 {
-    const TYPE_LINK = 'a';
+    const TYPE_LINK         = 'a';
+    const TYPE_TAG          = 'tag';
+    const TYPE_BEGIN_TAG    = 'tagBegin';
 
     public $type = self::TYPE_LINK;
 
@@ -95,6 +97,17 @@ class HtmlChain extends Object
                 $liveOptions = $this->getLiveAttributes();
                 $this->options = ArrayHelper::merge($this->options, $liveOptions);
                 break;
+            case static::TYPE_TAG:
+            case static::TYPE_BEGIN_TAG:
+                $liveOptions = $this->getLiveAttributes();
+                if(strtolower($this->tag) === 'form') {
+                    if(isset($liveOptions['data-live-method'])) {
+                        $this->options['method'] = $liveOptions['data-live-method'];
+                        unset($liveOptions['data-live-method']);
+                    }
+                }
+                $this->options = ArrayHelper::merge($this->options, $liveOptions);
+                break;
         }
     }
 
@@ -127,8 +140,12 @@ class HtmlChain extends Object
     protected function render() {
         $this->processLiveOptions();
         switch ($this->type) {
+            case static::TYPE_TAG:
             case static::TYPE_LINK:
-                return Html::tag($this->tag, $this->tagContent, $this->options);
+                return bsHtml::tag($this->tag, $this->tagContent, $this->options);
+                break;
+            case static::TYPE_BEGIN_TAG:
+                return bsHtml::beginTag($this->tag, $this->options) . $this->tagContent;
                 break;
         }
         return '';

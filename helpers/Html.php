@@ -2,6 +2,7 @@
 
 namespace digitv\yii2live\helpers;
 
+use Yii;
 use yii\bootstrap\Html as BootstrapHtml;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
@@ -42,6 +43,94 @@ class Html extends BootstrapHtml
         }
         $config = ['tag' => 'a', 'tagContent' => $text, 'options' => $options];
         return static::createChain(HtmlChain::TYPE_LINK, $config);
+    }
+
+    /**
+     * Generates a form start tag.
+     * @param array|string $action the form action URL. This parameter will be processed by [[Url::to()]].
+     * @param string $method the form submission method, such as "post", "get", "put", "delete" (case-insensitive).
+     * Since most browsers only support "post" and "get", if other methods are given, they will
+     * be simulated using "post", and a hidden input will be added which contains the actual method type.
+     * See [[\yii\web\Request::methodParam]] for more details.
+     * @param array $options the tag options in terms of name-value pairs. These will be rendered as
+     * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     * If a value is null, the corresponding attribute will not be rendered.
+     * See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     *
+     * Special options:
+     *
+     *  - `csrf`: whether to generate the CSRF hidden input. Defaults to true.
+     *
+     * @return string the generated form start tag.
+     * @see endForm()
+     */
+    public static function beginForm($action = '', $method = 'post', $options = [])
+    {
+        $action = Url::to($action);
+
+        $hiddenInputs = [];
+
+        $request = Yii::$app->getRequest();
+        if ($request instanceof \yii\web\Request) {
+            if (strcasecmp($method, 'get') && strcasecmp($method, 'post')) {
+                // simulate PUT, DELETE, etc. via POST
+                $hiddenInputs[] = static::hiddenInput($request->methodParam, $method);
+                $method = 'post';
+            }
+            $csrf = ArrayHelper::remove($options, 'csrf', true);
+
+            if ($csrf && $request->enableCsrfValidation && strcasecmp($method, 'post') === 0) {
+                $hiddenInputs[] = static::hiddenInput($request->csrfParam, $request->getCsrfToken());
+            }
+        }
+
+        if (!strcasecmp($method, 'get') && ($pos = strpos($action, '?')) !== false) {
+            // query parameters in the action are ignored for GET method
+            // we use hidden fields to add them back
+            foreach (explode('&', substr($action, $pos + 1)) as $pair) {
+                if (($pos1 = strpos($pair, '=')) !== false) {
+                    $hiddenInputs[] = static::hiddenInput(
+                        urldecode(substr($pair, 0, $pos1)),
+                        urldecode(substr($pair, $pos1 + 1))
+                    );
+                } else {
+                    $hiddenInputs[] = static::hiddenInput(urldecode($pair), '');
+                }
+            }
+            $action = substr($action, 0, $pos);
+        }
+
+        $options['action'] = $action;
+        $options['method'] = $method;
+        if (!empty($hiddenInputs)) {
+            $options['tagContent'] .= "\n" . implode("\n", $hiddenInputs);
+        }
+        $form = static::beginTag('form', $options, true);
+
+        return $form;
+    }
+
+    /**
+     * Generates a start tag.
+     * @param string|bool|null $name the tag name. If $name is `null` or `false`, the corresponding content will be rendered without any tag.
+     * @param array $options the tag options in terms of name-value pairs. These will be rendered as
+     * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     * If a value is null, the corresponding attribute will not be rendered.
+     * See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @return string the generated start tag
+     * @param bool $chain return HtmlChain
+     * @see endTag()
+     * @see tag()
+     */
+    public static function beginTag($name, $options = [], $chain = false)
+    {
+        if(!$chain) return parent::beginTag($name, $options);
+        $config = [
+            'tag' => $name,
+            'options' => $options,
+            'tagContent' => isset($options['tagContent']) ? $options['tagContent'] : '',
+        ];
+        return static::createChain(HtmlChain::TYPE_BEGIN_TAG, $config);
     }
 
     /**
