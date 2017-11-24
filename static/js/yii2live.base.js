@@ -129,10 +129,7 @@
         return {
             linkClick: function (e) {
                 var link = $(this), href = link.attr('href'),
-                    ajaxMethod = link.data('requestMethod') || 'get';
-                if(!self.utils.isLocalUrl(href)) return;
-                if(link.attr('target') === "_blank" || link.attr('data-live') === "0") return;
-                e.preventDefault();
+                    ajaxMethod = link.data('liveMethod') || 'get';
                 self.request.ajax(href, {method: ajaxMethod}, link);
                 return false;
             },
@@ -540,7 +537,7 @@
         }
         //Links click
         $(document).on('click', linksSelector, function (e) {
-            var link = $(this), confirm = link.data('confirmMessage'), href = link.attr('href');
+            var link = $(this), confirm = link.data('liveConfirm'), href = link.attr('href');
             if(!self.utils.isLocalUrl(href)) return;
             if(link.attr('target') === "_blank" || link.attr('data-live') === "0") return;
             e.preventDefault();
