@@ -555,12 +555,12 @@
             //e.preventDefault();
             if(confirm) {
                 yii.confirm(confirm, function () {
-                    return self.callbacks.formSubmit.apply(link, [e]);
+                    return self.callbacks.formSubmit.apply(form, [e]);
                 }, function () {});
             } else {
-                return self.callbacks.formSubmit.apply(link, [e]);
+                return self.callbacks.formSubmit.apply(form, [e]);
             }
-        }).on('submit', function (e) {
+        }).on('submit', formSelector, function (e) {
             e.preventDefault();
         });
     };
