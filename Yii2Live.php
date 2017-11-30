@@ -41,7 +41,7 @@ class Yii2Live extends Component implements BootstrapInterface
     /** @var string Links selector for javascript code */
     public $linkSelector = 'a';
     /** @var string Links selector for javascript code (default, when live load disabled, to handle AJAX commands) */
-    public $linkSelectorAjax = 'a[data-live-context], a[data-live-enabled]';
+    public $linkSelectorAjax = 'a[data-live-context], a[data-live-enabled], [data-live-context] a';
     /** @var string Forms selector for javascript code */
     public $formSelector = 'form';
     /** @var string Forms selector for javascript code (default, when live load disabled) */

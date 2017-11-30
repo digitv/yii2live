@@ -9,7 +9,7 @@
         enableReplaceAnimation: false,
         requestId: "",
         linkSelector: "a",
-        linkSelectorAjax: "a[data-live-context], a[data-live-enabled]",
+        linkSelectorAjax: "a[data-live-context], a[data-live-enabled], [data-live-context] a",
         formSelector: "form",
         formSelectorAjax: "form[data-live-context], form[data-live-enabled]",
         modalDefaultSelector: '#modal-general',
@@ -76,7 +76,9 @@
             },
             getElementContext: function (element) {
                 if(typeof element === "undefined" || !element.length) return self.settings.contexts.page;
-                var elemContext = element.data('liveContext'), elemParent;
+                var elemContext = element.data('liveContext'), elemParent,
+                    elemParentWithContext = element.parents('.yii2-live-widget[data-live-context]:first');
+                if((typeof elemContext !== "string" || $.trim(elemContext) === "") && elemParentWithContext.length) elemContext = elemParentWithContext.data('liveContext');
                 if(typeof elemContext !== "string" || $.trim(elemContext) === "") return self.settings.contexts.page;
                 if(elemContext === self.settings.contexts.parent) {
                     elemParent = element.parents('.yii2-live-widget:first');
@@ -166,6 +168,12 @@
                 self.loader.deActivate();
                 self.utils.setElementActive();
                 //console.log('ajaxComplete');
+            },
+            ajaxBeforeSend: function (xhr, settings) {
+                var element = self.utils.getElementActive(), elementOptions = self.utils.getElementOptions(element);
+                if(elementOptions.pushState && typeof settings.url !== "undefined") {
+                    self.request.pushState(null, null, settings.url);
+                }
             }
         };
     }();
@@ -181,7 +189,8 @@
             headers: {},
             success: self.callbacks.ajaxSuccess,
             error: self.callbacks.ajaxError,
-            complete: self.callbacks.ajaxComplete
+            complete: self.callbacks.ajaxComplete,
+            beforeSend: self.callbacks.ajaxBeforeSend
         };
         this.getDefaultOptions = function () {
             var options = rq.defaultOptions;
@@ -199,9 +208,9 @@
                 }
                 if(typeof element !== "undefined") self.activeElement = element;
                 elementOptions = self.utils.getElementOptions(element);
-                if(elementOptions.pushState && self.utils.isPushStateSupported()) {
+                /*if(elementOptions.pushState && self.utils.isPushStateSupported()) {
                     self.request.pushState(null, null, url);
-                }
+                }*/
                 options = $.extend({}, rq.getDefaultOptions(), options);
                 options.headers[self.settings.headerNameContext] = elementOptions.context;
                 //Set contentType and processData to false if FormData passed as `data` parameter

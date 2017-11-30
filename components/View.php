@@ -6,6 +6,7 @@ use digitv\yii2live\assets\Yii2LiveAsset;
 use digitv\yii2live\widgets\LoadingIndicator;
 use digitv\yii2live\Yii2Live;
 use Yii;
+use yii\base\ViewNotFoundException;
 use yii\bootstrap\Html;
 use yii\helpers\ArrayHelper;
 
@@ -32,6 +33,8 @@ class View extends \yii\web\View
     const LIVE_DATA_CALLBACK_CSRF      = 'processCsrf';
 
     public $livePageMeta    = [];
+
+    protected $_wasRender = false;
 
     /**
      * @inheritdoc
@@ -65,6 +68,9 @@ class View extends \yii\web\View
         $this->clear();
     }
 
+    /**
+     * Page end on live request
+     */
     public function endPageLive() {
         $this->trigger(self::EVENT_END_PAGE);
 
@@ -126,6 +132,21 @@ class View extends \yii\web\View
         }
 
         return $data;
+    }
+
+    /**
+     * Registers a CSS code block.
+     * @param string $css the content of the CSS code block to be registered
+     * @param array $options the HTML attributes for the `<style>`-tag.
+     * @param string $key the key that identifies the CSS code block. If null, it will use
+     * $css as the key. If two CSS code blocks are registered with the same key, the latter
+     * will overwrite the former.
+     */
+    public function registerCss($css, $options = [], $key = null)
+    {
+        $key = $key ?: md5($css);
+        $options['data-async-key'] = $key;
+        $this->css[$key] = Html::style($css, $options);
     }
 
     /**
@@ -276,18 +297,18 @@ class View extends \yii\web\View
     }
 
     /**
-     * Registers a CSS code block.
-     * @param string $css the content of the CSS code block to be registered
-     * @param array $options the HTML attributes for the `<style>`-tag.
-     * @param string $key the key that identifies the CSS code block. If null, it will use
-     * $css as the key. If two CSS code blocks are registered with the same key, the latter
-     * will overwrite the former.
+     * Check that where is need to render next file
+     * @return bool
      */
-    public function registerCss($css, $options = [], $key = null)
-    {
-        $key = $key ?: md5($css);
-        $options['data-async-key'] = $key;
-        $this->css[$key] = Html::style($css, $options);
+    protected function checkRenderNeed() {
+        $contextType = Yii2Live::getSelf()->getContextType();
+        if($contextType === Yii2Live::CONTEXT_TYPE_PAGE) return true;
+        if($contextType === Yii2Live::CONTEXT_TYPE_EXACT && ($contextId = Yii2Live::getSelf()->getContextId())) {
+            /** @var Response $response */
+            $response = Yii::$app->response;
+            if(isset($response->livePageWidgets[$contextId])) return false;
+        }
+        return true;
     }
 
     /**
@@ -327,5 +348,33 @@ class View extends \yii\web\View
     protected static function needMetaTags() {
         $contextType = Yii2Live::getSelf()->getContextType();
         return $contextType === Yii2Live::CONTEXT_TYPE_PAGE;
+    }
+
+    /**
+     * Renders a view file.
+     *
+     * If [[theme]] is enabled (not null), it will try to render the themed version of the view file as long
+     * as it is available.
+     *
+     * The method will call [[FileHelper::localize()]] to localize the view file.
+     *
+     * If [[renderers|renderer]] is enabled (not null), the method will use it to render the view file.
+     * Otherwise, it will simply include the view file as a normal PHP file, capture its output and
+     * return it as a string.
+     *
+     * @param string $viewFile the view file. This can be either an absolute file path or an alias of it.
+     * @param array $params the parameters (name-value pairs) that will be extracted and made available in the view file.
+     * @param object $context the context that the view should use for rendering the view. If null,
+     * existing [[context]] will be used.
+     * @return string the rendering result
+     * @throws ViewNotFoundException if the view file does not exist
+     */
+    public function renderFile($viewFile, $params = [], $context = null)
+    {
+        if(!$this->checkRenderNeed() && $this->_wasRender) {
+            return null;
+        }
+        $this->_wasRender = true;
+        return parent::renderFile($viewFile, $params, $context);
     }
 }
