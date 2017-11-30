@@ -24,9 +24,9 @@ class Yii2Live extends Component implements BootstrapInterface
 {
     const SESSION_WIDGETS_KEY = 'yii2live-widgets-data';
 
-    const CONTEXT_TYPE_PAGE     = 'page';
-    const CONTEXT_TYPE_MODAL    = 'modal';
     const CONTEXT_TYPE_EXACT    = 'exact';
+    const CONTEXT_TYPE_PAGE     = 'page';
+    const CONTEXT_TYPE_PARTIAL  = 'partial';
     //used only for JS
     const CONTEXT_TYPE_PARENT   = 'parent';
 
@@ -180,7 +180,7 @@ class Yii2Live extends Component implements BootstrapInterface
             /** @var Request $request */
             $request = Yii::$app->request;
             $context = $request->getRequestContext();
-            if(in_array($context, [static::CONTEXT_TYPE_PAGE, static::CONTEXT_TYPE_MODAL])) {
+            if(in_array($context, [static::CONTEXT_TYPE_PAGE, static::CONTEXT_TYPE_PARTIAL])) {
                 $this->_requestContextType = $context;
             } else {
                 $this->_requestContextType = static::CONTEXT_TYPE_EXACT;

@@ -53,7 +53,7 @@ class Yii2LiveAsset extends AssetBundle
 
             'contexts' => [
                 'page' => Yii2Live::CONTEXT_TYPE_PAGE,
-                'modal' => Yii2Live::CONTEXT_TYPE_MODAL,
+                'partial' => Yii2Live::CONTEXT_TYPE_PARTIAL,
                 'parent' => Yii2Live::CONTEXT_TYPE_PARENT,
             ],
         ];

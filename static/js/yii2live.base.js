@@ -17,7 +17,7 @@
         messageAdapter: 'alert',
         contexts: {
             page: 'page',
-            modal: 'modal',
+            partial: 'partial',
             parent: 'parent'
         },
         domainsLocal: [
@@ -95,9 +95,6 @@
                 options.context = self.utils.getElementContext(element);
                 //Disable pushState for POST requests
                 if(typeof elemData.requestMethod !== "undefined" && elemData.requestMethod.toLowerCase() === "post") {
-                    options.pushState = false;
-                //Disable pushState for modal context
-                } else if(options.context === self.settings.contexts.modal) {
                     options.pushState = false;
                 //Disable/enable pushState depending on element data attributes
                 } else {
