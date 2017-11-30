@@ -19,6 +19,8 @@ class HtmlInline extends Widget
 
     public $widgetResult;
 
+    public $pjax = false;
+
     /**
      * @inheritdoc
      */
@@ -42,6 +44,9 @@ class HtmlInline extends Widget
         ob_start();
         ob_implicit_flush(false);
         Html::addCssClass($this->options, 'yii2-live-widget');
+        if($this->pjax) {
+            $this->options['data-live-context'] = $this->id;
+        }
         echo Html::beginTag($this->tag, $this->options);
         if(!$this->isLiveRequest()) {}
     }
