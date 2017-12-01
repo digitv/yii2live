@@ -3,8 +3,8 @@
 namespace digitv\yii2live\widgets;
 
 use digitv\yii2live\behaviors\WidgetBehavior;
+use digitv\yii2live\helpers\Html;
 use digitv\yii2live\Yii2Live;
-use yii\bootstrap\Html;
 use yii\bootstrap\Widget;
 
 /**
@@ -18,8 +18,14 @@ class HtmlInline extends Widget
     public $tag = 'div';
 
     public $widgetResult;
-
+    /** @var bool Enable like old good Pjax */
     public $pjax = false;
+    /** @var string live context (Yii2Live::CONTEXT_TYPE_PAGE | Yii2Live::CONTEXT_TYPE_PARTIAL | Yii2Live::CONTEXT_TYPE_PARENT | element ID) */
+    public $liveContext;
+    /** @var bool Enable pushState on AJAX request */
+    public $livePushState;
+    /** @var bool Request method for live requests */
+    public $liveRequestMethod;
 
     /**
      * @inheritdoc
@@ -44,10 +50,19 @@ class HtmlInline extends Widget
         ob_start();
         ob_implicit_flush(false);
         Html::addCssClass($this->options, 'yii2-live-widget');
+        //Set live settings if Pjax enabled
         if($this->pjax) {
-            $this->options['data-live-context'] = $this->id;
+            if(!isset($this->liveContext)) { $this->liveContext = $this->id; }
+            if(!isset($this->livePushState)) { $this->livePushState = true; }
         }
-        echo Html::beginTag($this->tag, $this->options);
+        //Set live pushState && live context enabled attributes
+        $tag = Html::beginTag($this->tag, $this->options, true);
+        if(isset($this->livePushState) || isset($this->liveContext)) {
+            $tag->context($this->liveContext)
+                ->pushState($this->livePushState);
+            if(isset($this->liveRequestMethod)) { $tag->requestMethod($this->liveRequestMethod); }
+        }
+        echo $tag;
         if(!$this->isLiveRequest()) {}
     }
 

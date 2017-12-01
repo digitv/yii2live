@@ -117,7 +117,7 @@ class Html extends BootstrapHtml
      * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
      * If a value is null, the corresponding attribute will not be rendered.
      * See [[renderTagAttributes()]] for details on how attributes are being rendered.
-     * @return string the generated start tag
+     * @return string|HtmlChain the generated start tag
      * @param bool $chain return HtmlChain
      * @see endTag()
      * @see tag()

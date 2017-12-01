@@ -51,6 +51,7 @@ class HtmlChain extends Object
      * @return HtmlChain
      */
     public function context($contextValue) {
+        if(!isset($contextValue)) return $this;
         $this->liveOptions['context'] = $contextValue;
         if($contextValue !== Yii2Live::CONTEXT_TYPE_PAGE) {
             $this->pushState(false);
@@ -84,6 +85,7 @@ class HtmlChain extends Object
      * @return HtmlChain
      */
     public function pushState($enabled = true) {
+        $enabled = isset($enabled) ? !empty($enabled) : true;
         $this->liveOptions['pushState'] = $enabled;
         return $this;
     }
