@@ -74,34 +74,47 @@
                 if(typeof element !== "undefined" && element.length) self.activeElement = element;
                 else self.activeElement = undefined;
             },
-            getElementContext: function (element) {
-                if(typeof element === "undefined" || !element.length) return self.settings.contexts.page;
-                var elemContext = element.data('liveContext'), elemParent,
-                    elemParentWithContext = element.parents('.yii2-live-widget[data-live-context]:first');
-                if((typeof elemContext !== "string" || $.trim(elemContext) === "") && elemParentWithContext.length) elemContext = elemParentWithContext.data('liveContext');
-                if(typeof elemContext !== "string" || $.trim(elemContext) === "") return self.settings.contexts.page;
-                if(elemContext === self.settings.contexts.parent) {
-                    elemParent = element.parents('.yii2-live-widget:first');
-                    if(elemParent.length) return elemParent.attr('id');
+            //Get element live option value
+            getElementOption: function(element, optionName, defaultValue, skipParent) {
+                optionName = optionName.indexOf('live') !== 0 ? 'live' + optionName.charAt(0).toUpperCase() + optionName.slice(1) : optionName;
+                skipParent = typeof skipParent !== "undefined" ? skipParent : false;
+                var option = element.data(optionName), elementParent;
+                if(typeof option !== "undefined" && option !== null && !(typeof option === "string" && $.trim(option) === "")) {
+                    //Handle `parent` context option
+                    if(optionName === 'liveContext' && option === self.settings.contexts.parent) {
+                        elementParent = element.parents('.yii2-live-widget[data-live-context]:first');
+                        if(typeof defaultValue === "undefined") defaultValue = self.settings.contexts.page;
+                        option = elementParent.length ? elementParent.attr('id') : defaultValue;
+                    }
+                    return option;
+                } else {
+                    //Handle `requestMethod` option on `form` element
+                    if(optionName === "liveRequestMethod" && element[0].tagName.toLowerCase() === "form" && element.attr('method')) {
+                        return element.attr('method').toLowerCase();
+                    }
                 }
-                return elemContext;
+                //Get option value from parent
+                if(!skipParent) {
+                    elementParent = element.parents('.yii2-live-widget[data-live-context]:first');
+                    return elementParent.length ? self.utils.getElementOption(elementParent, optionName, defaultValue, true) : defaultValue;
+                }
+                return defaultValue;
             },
+            //Get element options
             getElementOptions: function (element) {
-                var elemData;
-                var options = {
+                var options, optionValue, i;
+                options = {
                     context: self.settings.contexts.page,
-                    pushState: true
+                    pushState: true,
+                    requestMethod: 'get'
                 };
                 if(typeof element === "undefined" && !element.length) return options;
-                elemData = element.data();
-                options.context = self.utils.getElementContext(element);
-                //Disable pushState for POST requests
-                if(typeof elemData.requestMethod !== "undefined" && elemData.requestMethod.toLowerCase() === "post") {
-                    options.pushState = false;
-                //Disable/enable pushState depending on element data attributes
-                } else {
-                    options.pushState = typeof elemData.livePushState !== "undefined" ? !!elemData.livePushState : true;
+                for (i in options) {
+                    optionValue = self.utils.getElementOption(element, i, options[i]);
+                    options[i] = optionValue;
                 }
+                //disable pushState for POST requests
+                if(options.requestMethod === 'post') options.pushState = false;
                 return options;
             },
             //Add location data fields to form
@@ -134,7 +147,10 @@
             },
             formSubmit: function (e) {
                 var form = $(this), url = form.attr('action'), method = form.attr('method') || 'post', data, formData;
-                self.utils.formLocationDataAdd(form);
+                //Store location only for POST requests
+                if(method.toLowerCase() === 'post') {
+                    self.utils.formLocationDataAdd(form);
+                }
                 formData = method.toLowerCase() === "post" ? new FormData(form[0]) : form.serialize();
                 self.utils.formLocationDataRemove(form);
                 data = {
@@ -160,7 +176,7 @@
                 if(xhr.statusText === "abort") return;
                 var element = self.utils.getElementActive(), elementOptions = self.utils.getElementOptions(element);
                 if(elementOptions.pushState) {
-                    history.back();
+                    window.location.reload();
                 }
                 console.error('ajaxError', xhr, xhr.status);
             },
