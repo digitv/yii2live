@@ -50,6 +50,7 @@ class Response extends \yii\web\Response
         }
         $this->liveCommands = ArrayHelper::merge($this->liveCommands, $jsCmd->commands);
         $data = [
+            '_info' => $this->getPageInfo(),
             'meta' => $view->livePageMeta,
             'widgets' => $this->livePageWidgets,
             'commands' => $this->liveCommands,
@@ -72,6 +73,18 @@ class Response extends \yii\web\Response
         if($this->checkData()) {
             $this->format = $this->data instanceof ResponseObject ? $this->data->getResponseType() : self::FORMAT_JSON;
         }
+    }
+
+    /**
+     * Get page info
+     * @return array
+     */
+    protected function getPageInfo() {
+        $data = [
+            'url' => Yii::$app->request->url,
+            'method' => strtolower(Yii::$app->request->method),
+        ];
+        return $data;
     }
 
     /**
