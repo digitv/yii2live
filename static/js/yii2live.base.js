@@ -562,6 +562,7 @@
             var link = $(this), confirm = link.data('liveConfirm'), href = link.attr('href');
             if(!self.utils.isLocalUrl(href)) return;
             if(link.attr('target') === "_blank" || link.attr('data-live') === "0") return;
+            if(e.isDefaultPrevented()) return;
             e.preventDefault();
             if(confirm) {
                 yii.confirm(confirm, function () {
