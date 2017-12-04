@@ -125,6 +125,21 @@ class JsCommand extends Object implements ResponseObject
     }
 
     /**
+     * $.fn.data
+     * $cmd->jData('a#link_1', 'pluginState', '2') OR
+     * $cmd->jData('a#link_1', ['pluginState' => '2'])
+     * @param string $selector
+     * @param string|array $attributeName
+     * @param string $attributeValue
+     * @return JsCommand
+     */
+    public function jData($selector = null, $attributeName = null, $attributeValue = null) {
+        $arguments = [$attributeName];
+        if(isset($attributeValue)) $arguments[] = $attributeValue;
+        return $this->jQuery($selector, 'data', $arguments);
+    }
+
+    /**
      * Begin jQuery chain
      * @return JsCommand
      */
