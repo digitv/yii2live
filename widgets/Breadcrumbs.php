@@ -1,15 +1,16 @@
 <?php
-/**
- * Created by coder1.
- * Date: 19.10.17
- * Time: 11:32
- */
 
 namespace digitv\yii2live\widgets;
 
-
 use digitv\yii2live\behaviors\WidgetBehavior;
+use digitv\yii2live\Yii2Live;
 
+/**
+ * Class Breadcrumbs
+ *
+ * @property string $widgetType
+ * @method bool|array checkWidgetState(array $data, bool $saveState, bool $checkLanguage)
+ */
 class Breadcrumbs extends \yii\widgets\Breadcrumbs
 {
     /**
@@ -20,6 +21,7 @@ class Breadcrumbs extends \yii\widgets\Breadcrumbs
         return [
             [
                 'class' => WidgetBehavior::className(),
+                'widgetType' => WidgetBehavior::LIVE_WIDGET_TYPE_COMMANDS,
             ],
         ];
     }
@@ -35,10 +37,30 @@ class Breadcrumbs extends \yii\widgets\Breadcrumbs
      */
     public function run()
     {
+        $live = Yii2Live::getSelf();
+        if($live) {
+            $stateCheck = $this->computeLiveState();
+            if($live->isLiveRequest()) {
+                if($stateCheck === true) return null;
+                $this->widgetType = WidgetBehavior::LIVE_WIDGET_TYPE_HTML;
+            }
+        }
         ob_start();
         ob_implicit_flush(false);
         parent::run();
         $content = ob_get_clean();
         return $content;
+    }
+
+    /**
+     * Compute widget state (changed or not)
+     * @return bool
+     */
+    protected function computeLiveState()
+    {
+        $items = $this->links;
+        $stateCheck = $this->checkWidgetState($items, true, true);
+        if(is_bool($stateCheck)) return $stateCheck;
+        return false;
     }
 }

@@ -12,7 +12,7 @@ use yii\helpers\Url;
  * Class Nav
  *
  * @property string $widgetType
- * @method int checkWidgetState(array $data, bool $saveState, bool $checkLanguage)
+ * @method bool|array checkWidgetState(array $data, bool $saveState, bool $checkLanguage)
  */
 class Nav extends \yii\bootstrap\Nav
 {
@@ -38,16 +38,19 @@ class Nav extends \yii\bootstrap\Nav
         $live = Yii2Live::getSelf();
         if($live) {
             $stateCheck = $this->computeLiveState();
-            if($stateCheck !== WidgetBehavior::LIVE_WIDGET_STATE_RELOAD) return null;
-            $this->widgetType = WidgetBehavior::LIVE_WIDGET_TYPE_HTML;
+            if($live->isLiveRequest()) {
+                if($stateCheck === true) return null;
+                $this->widgetType = WidgetBehavior::LIVE_WIDGET_TYPE_HTML;
+            }
         }
         return $this->renderItems();
     }
 
     /**
-     * @return int
+     * Compute widget state (changed or not)
+     * @return bool
      */
-    public function computeLiveState() {
+    protected function computeLiveState() {
         $activeUrls = $this->getActiveUrls($this->items);
         $items = [];
         foreach ($this->items as $item) {
@@ -60,22 +63,25 @@ class Nav extends \yii\bootstrap\Nav
             'activeUrls' => $activeUrls,
             'items' => md5(implode("\n", $items)),
         ];
-        $oldData = Yii2Live::getSelf()->getWidgetRequestState($this->id);
         $live = Yii2Live::getSelf();
         $stateCheck = $this->checkWidgetState($data, true, false);
-        if($stateCheck === WidgetBehavior::LIVE_WIDGET_STATE_CHANGED && $live->isLiveRequest()) {
-            if($data['items'] !== $oldData['items']) return WidgetBehavior::LIVE_WIDGET_STATE_RELOAD;
-            $menuSelector = '#' . $this->id;
-            $cmd = $live->commands();
-            $cmd->jRemoveClass($menuSelector . ' li', 'active');
-            foreach ($activeUrls as $url) {
-                $cmd->chainBegin()
-                    ->jParent($menuSelector . ' a[href="'.$url.'"]')
-                    ->jAddClass(null, 'active')
-                    ->chainEnd();
+        if(is_bool($stateCheck)) return $stateCheck;
+        if(is_array($stateCheck)) {
+            if(in_array('items', $stateCheck)) return false;
+            if(in_array('activeUrls', $stateCheck)) {
+                $menuSelector = '#' . $this->id;
+                $cmd = $live->commands();
+                $cmd->jRemoveClass($menuSelector . ' li', 'active');
+                foreach ($activeUrls as $url) {
+                    $cmd->chainBegin()
+                        ->jParent($menuSelector . ' a[href="'.$url.'"]')
+                        ->jAddClass(null, 'active')
+                        ->chainEnd();
+                }
             }
+            return true;
         }
-        return $stateCheck;
+        return true;
     }
 
     /**
@@ -96,6 +102,11 @@ class Nav extends \yii\bootstrap\Nav
         return $urls;
     }
 
+    /**
+     * Check that item is fully active
+     * @param $item
+     * @return bool
+     */
     protected function isItemActiveFully($item)
     {
         if(isset($item['active']) && !empty($item['active'])) return true;
