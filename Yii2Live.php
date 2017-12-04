@@ -131,14 +131,13 @@ class Yii2Live extends Component implements BootstrapInterface
     /**
      * Get widget state for request
      * @param string $widgetId
-     * @param bool   $raw
      * @return array|null
      */
-    public function getWidgetRequestState($widgetId, $raw = false) {
+    public function getWidgetRequestState($widgetId) {
         $requestId = $this->requestId;
         $data = $_SESSION[static::SESSION_WIDGETS_KEY];
         if(!isset($data[$requestId]) || !isset($data[$requestId][$widgetId])) return null;
-        return $raw ? $data[$requestId][$widgetId] : $data[$requestId][$widgetId]['data'];
+        return $data[$requestId][$widgetId];
     }
 
     /**
@@ -147,11 +146,14 @@ class Yii2Live extends Component implements BootstrapInterface
      * @param array $data
      */
     public function setWidgetRequestState($widgetId, $data) {
-        $widgetData = [
-            'data' => $data,
-            'hash' => md5(json_encode($data, JSON_FORCE_OBJECT + JSON_UNESCAPED_UNICODE)),
-        ];
-        $_SESSION[static::SESSION_WIDGETS_KEY][$this->requestId][$widgetId] = $widgetData;
+        $_SESSION[static::SESSION_WIDGETS_KEY][$this->requestId][$widgetId] = $data;
+        $maxLength = 10;
+        //Cleanup session widgets states
+        if(count($_SESSION[static::SESSION_WIDGETS_KEY]) > $maxLength) {
+            krsort($_SESSION[static::SESSION_WIDGETS_KEY]);
+            $_SESSION[static::SESSION_WIDGETS_KEY] = array_slice($_SESSION[static::SESSION_WIDGETS_KEY], 0, $maxLength);
+            ksort($_SESSION[static::SESSION_WIDGETS_KEY]);
+        }
     }
 
     /**
@@ -162,9 +164,9 @@ class Yii2Live extends Component implements BootstrapInterface
         if(!isset($this->_requestId)) {
             $requestId = $this->getRequestHeaderId();
             if(!$requestId) {
-                $time = ceil(microtime(true) . 1000);
+                $time = ceil(microtime(true) * 10000);
                 $rand = rand(1000, 9999);
-                $requestId = md5($time . ':' . $rand);
+                $requestId = $time . '_' .  md5($time . ':' . $rand);
             }
             $this->_requestId = $requestId;
         }
