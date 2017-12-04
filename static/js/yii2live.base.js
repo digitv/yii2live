@@ -430,7 +430,7 @@
                     if(typeof widgetRow.callback === "undefined") continue;
                     callbackName = widgetRow.callback;
                     if(typeof self.pageWidgets[callbackName] === "function") {
-                        result = self.pageWidgets[callbackName].apply(self, [widgetRow]);
+                        self.pageWidgets[callbackName].apply(self, [widgetRow]);
                     }
                 }
                 $(document).trigger(self.events.EVENT_WIDGETS_LOADED);
