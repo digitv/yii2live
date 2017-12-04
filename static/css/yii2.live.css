@@ -102,6 +102,12 @@
     opacity: 0;
     transition: min-height 0.3s ease 0s, max-height 0.3s ease 0s, opacity 0.8s ease 0s;
 }
+.navbar-inverse .yii2live-element-ajax-wrapper::before {
+    background: #222;
+}
+.navbar-inverse .yii2live-element-ajax-wrapper::after {
+    color: #FFF;
+}
 .yii2live-element-ajax-wrapper.active::before {
     opacity: 1;
     transition: none;

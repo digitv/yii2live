@@ -441,7 +441,7 @@
                 if(typeof data.dataHtml === "undefined" || !widget.length) return;
                 if(insertMethod === "replace") {
                     //widget.replaceWith(data.dataHtml);
-                    self.dom.replaceWith(widget, data.dataHtml, true);
+                    widget = self.dom.replaceWith(widget, data.dataHtml, true);
                 } else {
                     //widget.html(data.dataHtml);
                     self.dom.html(widget, data.dataHtml, true);
@@ -483,7 +483,7 @@
             },
             //html or element insertion
             insert: function (element, html, method, wrapElement) {
-                var wrap = true;
+                var wrap = true, isReplace = false;
                 if(typeof element === "string") element = $(element);
                 if(!element.length || typeof $.fn[method] !== "function") return;
                 if(typeof wrapElement === "undefined" || !wrapElement) wrap = false;
@@ -491,14 +491,18 @@
                 //wrap element
                 if(wrap) { self.dom.wrap(wrapElement); }
                 //Get new wrapElement for replace method
-                if(method === "replaceWith") {
+                if(method === "replaceWith") { isReplace = true; }
+                if(isReplace) {
                     html = $(html);
                     wrapElement = html;
                 }
                 $.fn[method].apply(element, [html]);
                 //unwrap element
-                if(wrap) { self.dom.unwrap(wrapElement); }
-                return element;
+                if(wrap) {
+                    setTimeout(function () { self.dom.unwrap(wrapElement); }, 5);
+                    return wrapElement.parent();
+                }
+                return isReplace ? wrapElement : element;
             },
             //Wrap element
             wrap: function (element) {
