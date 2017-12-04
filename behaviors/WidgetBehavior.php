@@ -8,6 +8,7 @@ use yii\base\Behavior;
 use yii\base\Widget;
 use yii\base\WidgetEvent;
 use yii\bootstrap\Html;
+use yii\helpers\ArrayHelper;
 
 /**
  * Class WidgetBehavior
@@ -21,10 +22,6 @@ class WidgetBehavior extends Behavior
     const LIVE_WIDGET_TYPE_CONFIGURABLE     = 'configurable';
     const LIVE_WIDGET_TYPE_COMBINED         = 'combined';
     const LIVE_WIDGET_TYPE_COMMANDS         = 'commands';
-
-    const LIVE_WIDGET_STATE_CHANGED         = 1;
-    const LIVE_WIDGET_STATE_NOT_CHANGED     = 0;
-    const LIVE_WIDGET_STATE_RELOAD          = 2;
 
     public $widgetType                      = self::LIVE_WIDGET_TYPE_HTML;
     /** @var string jQuery insert method (insert|replace) */
@@ -186,29 +183,43 @@ class WidgetBehavior extends Behavior
 
     /**
      * Check that widget state changed
-     * @param array $data
+     * @param array $stateData
      * @param bool  $saveState
      * @param bool  $checkLanguage
-     * @return bool
+     * @return bool|array
      */
-    public function checkWidgetState($data = [], $saveState = true, $checkLanguage = true) {
-        $this->processWidgetState($data);
-        $oldDataRaw = Yii2Live::getSelf()->getWidgetRequestState($this->id, true);
-        $oldData = isset($oldDataRaw['data']) ? $oldDataRaw['data'] : [];
-        $newHash = md5(json_encode($data, JSON_FORCE_OBJECT + JSON_UNESCAPED_UNICODE));
+    public function checkWidgetState($stateData = [], $saveState = true, $checkLanguage = false) {
+        $this->processWidgetState($stateData);
+        $oldStateData = Yii2Live::getSelf()->getWidgetRequestState($this->id);
+        $diff = $this->getWidgetStatesDifference($stateData, $oldStateData);
         if($saveState) {
-            $this->setWidgetState($data);
+            $this->setWidgetState($stateData);
         }
-        if(empty($oldData)) {
-            return static::LIVE_WIDGET_STATE_RELOAD;
+        //No difference
+        if(empty($diff)) return true;
+        //Difference in general key
+        if(in_array('general', $diff)) return false;
+        //Language mismatch
+        if($checkLanguage && (!isset($oldStateData['lang']) || ($stateData['lang'] !== $oldStateData['lang']))) {
+            return false;
         }
-        if($checkLanguage && (!isset($oldData['lang']) || ($data['lang'] !== $oldData['lang']))) {
-            return static::LIVE_WIDGET_STATE_RELOAD;
+        return $diff;
+    }
+
+    /**
+     * Get old and new state difference (array of keys)
+     * @param array $stateData
+     * @param array $oldStateData
+     * @return array
+     */
+    public function getWidgetStatesDifference($stateData = [], $oldStateData = []) {
+        if(!isset($oldStateData) || !is_array($oldStateData)) return array_keys($stateData);
+        $diff = array_diff_key($oldStateData, $stateData);
+        foreach ($stateData as $key => $value) {
+            if(isset($oldStateData[$key]) && (string)$value === (string)$oldStateData[$key]) continue;
+            $diff[] = $key;
         }
-        if(empty($oldDataRaw['hash']) || $newHash !== $oldDataRaw['hash']) {
-            return static::LIVE_WIDGET_STATE_CHANGED;
-        }
-        return static::LIVE_WIDGET_STATE_NOT_CHANGED;
+        return $diff;
     }
 
     /**
@@ -223,9 +234,17 @@ class WidgetBehavior extends Behavior
     /**
      * Process widget state data
      * @param array $data
+     * @param bool  $forceOneLevel
      * @return array
      */
-    protected function processWidgetState(&$data = []) {
+    protected function processWidgetState(&$data = [], $forceOneLevel = true) {
+        if(!is_array($data) || !ArrayHelper::isAssociative($data)) $data = ['general' => $data];
+        if($forceOneLevel) {
+            foreach($data as $key => $row) {
+                if(is_scalar($row)) continue;
+                $data[$key] = md5(json_encode($row, JSON_FORCE_OBJECT + JSON_UNESCAPED_UNICODE));
+            }
+        }
         $data['lang'] = Yii::$app->language;
         return $data;
     }
