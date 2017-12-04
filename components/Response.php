@@ -83,6 +83,8 @@ class Response extends \yii\web\Response
         $data = [
             'url' => Yii::$app->request->url,
             'method' => strtolower(Yii::$app->request->method),
+            'requestId' => Yii2Live::getSelf()->requestId,
+            'contextType' => Yii2Live::getSelf()->getContextType(),
         ];
         return $data;
     }
