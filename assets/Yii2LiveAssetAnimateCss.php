@@ -22,7 +22,7 @@ class Yii2LiveAssetAnimateCss extends AssetBundle
      */
     public function init()
     {
-        $this->js = [
+        $this->css = [
             YII_DEBUG ? 'animate.css' : 'animate.min.css',
         ];
         parent::init();
