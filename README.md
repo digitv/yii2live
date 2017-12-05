@@ -1,5 +1,21 @@
 # Yii2live SANDBOX project!
 
+This extension helps you with AJAX links, forms and modals.
+
+Application AJAX response is divided into:
+
+* JS/CSS files;
+* inline JS/CSS;
+* Page widgets output;
+* JS commands.
+
+And all of these things are processed separately. 
+So you can return only few javascript commands and no more else, 
+or just one widget (as old good Pjax), 
+or whole page, but only widgets, state of those were changed.
+
+For example your `Nav` widget can decide what to do by itself - render widget fully or just change active link. There are special widget states for this.
+
 ### _Config options_
 
 |Option                 |Description|
