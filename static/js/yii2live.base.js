@@ -11,7 +11,7 @@
         linkSelector: "a",
         linkSelectorAjax: "a[data-live-context], a[data-live-enabled], [data-live-context] a",
         formSelector: "form",
-        formSelectorAjax: "form[data-live-context], form[data-live-enabled]",
+        formSelectorAjax: "form[data-live-context], form[data-live-enabled], [data-live-context] form.gridview-filter-form",
         modalDefaultSelector: '#modal-general',
         wrapElementClass: 'yii2live-element-ajax-wrapper',
         messageAdapter: 'alert',
@@ -585,7 +585,6 @@
         //Form submit
         $(document).on('beforeSubmit', formSelector, function (e) {
             var form = $(this), confirm = form.data('confirmMessage');
-            //e.preventDefault();
             if(confirm) {
                 yii.confirm(confirm, function () {
                     return self.callbacks.formSubmit.apply(form, [e]);
@@ -595,6 +594,7 @@
             }
         }).on('submit', formSelector, function (e) {
             e.preventDefault();
+            if($(this).hasClass('gridview-filter-form')) $(this).trigger('beforeSubmit');
         });
     };
 

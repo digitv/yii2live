@@ -45,7 +45,7 @@ class Yii2Live extends Component implements BootstrapInterface
     /** @var string Forms selector for javascript code */
     public $formSelector = 'form';
     /** @var string Forms selector for javascript code (default, when live load disabled) */
-    public $formSelectorAjax = 'form[data-live-context], form[data-live-enabled]';
+    public $formSelectorAjax = 'form[data-live-context], form[data-live-enabled], [data-live-context] form.gridview-filter-form';
     /** @var bool Enable replacing elements animation */
     public $enableReplaceAnimation = false;
     /** @var bool Enable replacing elements animation */
