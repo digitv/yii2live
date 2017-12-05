@@ -2,6 +2,7 @@
 
 namespace digitv\yii2live\assets;
 
+use digitv\yii2live\components\View;
 use digitv\yii2live\Yii2Live;
 use yii\web\AssetBundle;
 use yii\web\JsExpression;
@@ -24,6 +25,7 @@ class Yii2LiveAsset extends AssetBundle
     public $depends = [
         'yii\web\JqueryAsset',
         'yii\web\YiiAsset',
+        'digitv\yii2live\assets\Yii2LiveAssetFA',
     ];
 
     public function init()
@@ -62,6 +64,7 @@ class Yii2LiveAsset extends AssetBundle
         if(typeof yii2live === 'undefined') yii2live = new Yii2Live(" . $settingsJson . ");
         else yii2live.settings.merge(" . $settingsJson . ");
         ");
+        /** @var $view View|\yii\web\View */
         parent::registerAssetFiles($view);
         $view->registerJs((string)$jsSettings);
     }
