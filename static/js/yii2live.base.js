@@ -262,12 +262,21 @@
         return {
             processData: function (data) {
                 console.log(data);
+                //Request info
+                if(typeof data._info !== "undefined") {
+                    if(typeof data._info.requestId !== "undefined" && self.settings.requestId !== data._info.requestId) {
+                        self.settingsUtils.merge({requestId: data._info.requestId});
+                    }
+                }
+                //Page meta info (JS/CSS/meta tags)
                 if(typeof data.meta !== "undefined") {
                     self.pageMeta.process(data.meta);
                 }
+                //Page widgets
                 if(typeof data.widgets !== "undefined") {
                     self.pageWidgets.process(data.widgets);
                 }
+                //JS commands
                 if(typeof data.commands !== "undefined") {
                     self.ajaxCmd.process(data.commands);
                 }
