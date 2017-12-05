@@ -31,6 +31,11 @@ class Yii2LiveAsset extends AssetBundle
     public function init()
     {
         parent::init();
+        $live = Yii2Live::getSelf();
+        //Add $.notify library
+        if($live->messageAdapter === 'notify') {
+            $this->depends[] = 'digitv\yii2live\assets\Yii2LiveAssetNotify';
+        }
     }
 
     /**
