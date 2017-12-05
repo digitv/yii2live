@@ -39,8 +39,6 @@ class Response extends \yii\web\Response
         if(!$this->checkData()) return;
         $component = Yii2Live::getSelf();
         $responseData = $this->data;
-        /** @var View $view */
-        $view = Yii::$app->view;
         $jsCmd = $component->commands();
         $jsAttributes = $component->attributes()->getAttributesForJs();
         if(!empty($jsAttributes)) {
@@ -51,7 +49,7 @@ class Response extends \yii\web\Response
         $this->liveCommands = ArrayHelper::merge($this->liveCommands, $jsCmd->commands);
         $data = [
             '_info' => $this->getPageInfo(),
-            'meta' => $view->livePageMeta,
+            'meta' => $this->getPageMeta(),
             'widgets' => $this->livePageWidgets,
             'commands' => $this->liveCommands,
         ];
@@ -87,6 +85,20 @@ class Response extends \yii\web\Response
             'contextType' => Yii2Live::getSelf()->getContextType(),
         ];
         return $data;
+    }
+
+    /**
+     * Get View page meta data
+     * @return array
+     */
+    protected function getPageMeta() {
+        /** @var View $view */
+        $view = Yii::$app->view;
+        $pageMeta = [];
+        if(!($this->data instanceof ResponseObject)) {
+            $pageMeta = isset($view->livePageMeta) ? $view->livePageMeta : $view->getLivePageMeta();
+        }
+        return $pageMeta;
     }
 
     /**

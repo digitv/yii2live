@@ -5,6 +5,7 @@ namespace digitv\yii2live\widgets;
 use digitv\yii2live\behaviors\WidgetBehavior;
 use digitv\yii2live\helpers\Html;
 use digitv\yii2live\Yii2Live;
+use Yii;
 use yii\bootstrap\Widget;
 
 /**
@@ -47,6 +48,14 @@ class HtmlInline extends Widget
         //Bootstrap widget init
         parent::init();
 
+        //Clear view data on this widget context
+        if($this->isLiveRequest()) {
+            $live = Yii2Live::getSelf();
+            if($live->getContextType() === Yii2Live::CONTEXT_TYPE_EXACT && $live->getContextId() === $this->id) {
+                Yii::$app->view->clear();
+            }
+        }
+
         ob_start();
         ob_implicit_flush(false);
         Html::addCssClass($this->options, 'yii2-live-widget');
@@ -63,7 +72,6 @@ class HtmlInline extends Widget
             if(isset($this->liveRequestMethod)) { $tag->requestMethod($this->liveRequestMethod); }
         }
         echo $tag;
-        if(!$this->isLiveRequest()) {}
     }
 
     /**
