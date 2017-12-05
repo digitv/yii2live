@@ -440,10 +440,8 @@
                 var insertMethod = typeof data.insertMethod !== "undefined" ? data.insertMethod : 'insert';
                 if(typeof data.dataHtml === "undefined" || !widget.length) return;
                 if(insertMethod === "replace") {
-                    //widget.replaceWith(data.dataHtml);
                     widget = self.dom.replaceWith(widget, data.dataHtml, true);
                 } else {
-                    //widget.html(data.dataHtml);
                     self.dom.html(widget, data.dataHtml, true);
                 }
                 widget.trigger(self.events.EVENT_HTML_INSERT);
@@ -458,7 +456,6 @@
     }();
 
     //Dom manipulations
-    //TODO: Remove this
     this.dom = function () {
         return {
             //$.fn.replaceWith
