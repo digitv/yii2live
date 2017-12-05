@@ -35,6 +35,7 @@ class Yii2LiveAsset extends AssetBundle
         //Add $.notify library
         if($live->messageAdapter === 'notify') {
             $this->depends[] = 'digitv\yii2live\assets\Yii2LiveAssetNotify';
+            $this->depends[] = 'digitv\yii2live\assets\Yii2LiveAssetAnimateCss';
         }
     }
 
