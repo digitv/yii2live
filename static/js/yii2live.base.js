@@ -83,7 +83,7 @@
                     //Handle `parent` context option
                     if(optionName === 'liveContext' && option === self.settings.contexts.parent) {
                         elementParent = element.parents('.yii2-live-widget[data-live-context]:first');
-                        if(typeof defaultValue === "undefined") defaultValue = self.settings.contexts.page;
+                        defaultValue = self.settings.contexts.partial;
                         option = elementParent.length ? elementParent.attr('id') : defaultValue;
                     }
                     return option;
