@@ -70,8 +70,22 @@ yii2liveCmd = function (self) {
         },
         //Pjax methods
         cmdPjax: function (method, args) {
+            var container = $(args[0].container);
+            if(container.length && container.hasClass('yii2-live-widget') && container.data('liveContext')) {
+                return this.cmdPjaxContainer(method, args);
+            }
             if(typeof jQuery.pjax === "undefined" || typeof jQuery.pjax[method] !== "function") return;
             return jQuery.pjax[method].apply(null, args);
+        },
+        //Pjax methods (for live container)
+        cmdPjaxContainer: function (method, args) {
+            var container = $(args[0].container);
+            if(!container.length) return;
+            if(method === 'reload') {
+                setTimeout(function () {
+                    yii2live.request.ajax(window.location.href, {}, container);
+                }, 20);
+            }
         },
         //Message methods
         cmdMessage: function (method, args) {

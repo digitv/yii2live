@@ -108,7 +108,7 @@
                     pushState: true,
                     requestMethod: 'get'
                 };
-                if(typeof element === "undefined" && !element.length) return options;
+                if(typeof element === "undefined" || !element.length) return options;
                 for (i in options) {
                     optionValue = self.utils.getElementOption(element, i, options[i]);
                     options[i] = optionValue;
@@ -165,10 +165,13 @@
                 }
             },
             ajaxSuccess: function (response, statusText, xhr) {
-                var element = self.utils.getElementActive(), pushUrl = window.location.href, elementOptions = self.utils.getElementOptions(element);
                 self.response.processData(response);
-                if(elementOptions.pushState) {
-                    self.request.pushState(null, null, pushUrl, true);
+                var element = self.utils.getElementActive(), pushUrl = window.location.href, elementOptions;
+                if(typeof element !== "undefined" && element.length) {
+                    elementOptions = self.utils.getElementOptions(element);
+                    if(typeof elementOptions.pushState !== "undefined" && elementOptions.pushState) {
+                        self.request.pushState(null, null, pushUrl, true);
+                    }
                 }
                 console.log('ajaxSuccess');
             },
@@ -217,11 +220,11 @@
         return {
             ajax: function (url, options, element) {
                 var elementOptions;
-                self.request.ajaxAbort();
-                self.loader.activate();
                 if(typeof url === "undefined") {
                     console.error('Required parameter `url` is missing'); return;
                 }
+                self.request.ajaxAbort();
+                self.loader.activate();
                 if(typeof element !== "undefined") self.activeElement = element;
                 elementOptions = self.utils.getElementOptions(element);
                 options = $.extend({}, rq.getDefaultOptions(), options);
@@ -604,6 +607,7 @@
 
     //Prototyping
     Yii2Live.prototype.utils = this.utils;
+    Yii2Live.prototype.request = this.request;
     Yii2Live.prototype.response = this.response;
     Yii2Live.prototype.settings = this.settingsUtils;
     Yii2Live.prototype.ajaxCmd = this.ajaxCmd;
