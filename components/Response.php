@@ -94,9 +94,9 @@ class Response extends \yii\web\Response
     protected function getPageMeta() {
         /** @var View $view */
         $view = Yii::$app->view;
-        $pageMeta = [];
-        if(!($this->data instanceof ResponseObject)) {
-            $pageMeta = isset($view->livePageMeta) ? $view->livePageMeta : $view->getLivePageMeta();
+        $pageMeta = isset($view->livePageMeta) ? $view->livePageMeta : [];
+        if(!($this->data instanceof ResponseObject) && !isset($view->livePageMeta)) {
+            $pageMeta = $view->getLivePageMeta();
         }
         return $pageMeta;
     }

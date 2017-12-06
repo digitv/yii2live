@@ -52,7 +52,7 @@ class View extends \yii\web\View
     {
         $component = Yii2Live::getSelf();
         if($component->isLiveRequest()) {
-            $this->endPageLive();
+            $this->endPageLive($ajaxMode);
             return;
         }
         $this->trigger(self::EVENT_END_PAGE);
@@ -70,8 +70,9 @@ class View extends \yii\web\View
 
     /**
      * Page end on live request
+     * @param bool $ajaxMode
      */
-    public function endPageLive() {
+    public function endPageLive($ajaxMode = false) {
         $this->trigger(self::EVENT_END_PAGE);
 
         $content = ob_get_clean();
@@ -79,9 +80,9 @@ class View extends \yii\web\View
         $this->livePageMeta = $this->getLivePageMeta();
 
         echo strtr($content, [
-            self::PH_HEAD => $this->renderHeadHtml(),
-            self::PH_BODY_BEGIN => $this->renderBodyBeginHtml(),
-            self::PH_BODY_END => $this->renderBodyEndHtml(true),
+            self::PH_HEAD => $this->renderHeadHtml($ajaxMode),
+            self::PH_BODY_BEGIN => $this->renderBodyBeginHtml($ajaxMode),
+            self::PH_BODY_END => $this->renderBodyEndHtml($ajaxMode),
         ]);
 
         $this->clear();
@@ -214,22 +215,70 @@ class View extends \yii\web\View
         return $data;
     }
 
+
+    /**
+     * Renders the content to be inserted in the head section.
+     * The content is rendered using the registered meta tags, link tags, CSS/JS code blocks and files.
+     * @param bool $ajaxMode
+     * @return string the rendered content
+     */
+    protected function renderHeadHtml($ajaxMode = false)
+    {
+        $lines = [];
+        $live = Yii2Live::getSelf();
+        $isLiveRequest = $live && $live->isLiveRequest();
+        if($ajaxMode && $isLiveRequest) {
+            if (!empty($this->css)) {
+                $lines[] = implode("\n", $this->css);
+            }
+            if (!empty($this->js[self::POS_HEAD])) {
+                $lines[] = Html::script(implode("\n", $this->js[self::POS_HEAD]), ['type' => 'text/javascript']);
+            }
+        } else {
+            if (!empty($this->metaTags)) {
+                $lines[] = implode("\n", $this->metaTags);
+            }
+            if (!empty($this->linkTags)) {
+                $lines[] = implode("\n", $this->linkTags);
+            }
+            if (!empty($this->cssFiles)) {
+                $lines[] = implode("\n", $this->cssFiles);
+            }
+            if (!empty($this->css)) {
+                $lines[] = implode("\n", $this->css);
+            }
+            if (!empty($this->jsFiles[self::POS_HEAD])) {
+                $lines[] = implode("\n", $this->jsFiles[self::POS_HEAD]);
+            }
+            if (!empty($this->js[self::POS_HEAD])) {
+                $lines[] = Html::script(implode("\n", $this->js[self::POS_HEAD]), ['type' => 'text/javascript']);
+            }
+        }
+
+        return empty($lines) ? '' : implode("\n", $lines);
+    }
+
     /**
      * Renders the content to be inserted at the beginning of the body section.
      * The content is rendered using the registered JS code blocks and files.
+     * @param bool $ajaxMode
      * @return string the rendered content
      */
-    protected function renderBodyBeginHtml()
+    protected function renderBodyBeginHtml($ajaxMode = false)
     {
         $lines = [];
+        $live = Yii2Live::getSelf();
+        $isLiveRequest = $live && $live->isLiveRequest();
         $regionFiles = self::getPageRegion(self::POS_BEGIN, 'js');
-        if (!empty($this->jsFiles[self::POS_BEGIN])) {
+        if (!empty($this->jsFiles[self::POS_BEGIN]) && !($ajaxMode && $isLiveRequest)) {
             $lines[] = implode("\n", $this->jsFiles[self::POS_BEGIN]);
         }
         if (!empty($this->js[self::POS_BEGIN])) {
             $lines[] = Html::script(implode("\n", $this->js[self::POS_BEGIN]), ['type' => 'text/javascript']);
         }
-        $linesStr = Html::tag('div', implode("\n", $lines), ['data-live-region' => $regionFiles]);
+        $linesStr = $ajaxMode && $isLiveRequest
+            ? implode("\n", $lines)
+            : Html::tag('div', implode("\n", $lines), ['data-live-region' => $regionFiles]);
 
         return $linesStr;
     }
@@ -242,12 +291,13 @@ class View extends \yii\web\View
      * will be rendered at the end of the view like normal scripts.
      * @return string the rendered content
      */
-    protected function renderBodyEndHtml($ajaxMode)
+    protected function renderBodyEndHtml($ajaxMode = false)
     {
         $lines = [];
-
+        $live = Yii2Live::getSelf();
+        $isLiveRequest = $live && $live->isLiveRequest();
         if ($ajaxMode) {
-            if (!empty($this->jsFiles[self::POS_END])) {
+            if (!empty($this->jsFiles[self::POS_END]) && !$isLiveRequest) {
                 $lines[] = implode("\n", $this->jsFiles[self::POS_END]);
             }
             $scripts = [];
