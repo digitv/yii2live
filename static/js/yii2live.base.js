@@ -224,14 +224,11 @@
                 }
                 if(typeof element !== "undefined") self.activeElement = element;
                 elementOptions = self.utils.getElementOptions(element);
-                /*if(elementOptions.pushState && self.utils.isPushStateSupported()) {
-                    self.request.pushState(null, null, url);
-                }*/
                 options = $.extend({}, rq.getDefaultOptions(), options);
                 options.headers[self.settings.headerNameContext] = elementOptions.context;
                 //Set contentType and processData to false if FormData passed as `data` parameter
                 if(typeof options.data !== "undefined" && options.data.toString() === '[object FormData]') {
-                    $.extend(options.data, {
+                    $.extend(options, {
                         contentType: false,
                         processData: false
                     });
