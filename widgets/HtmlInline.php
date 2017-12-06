@@ -25,8 +25,10 @@ class HtmlInline extends Widget
     public $liveContext;
     /** @var bool Enable pushState on AJAX request */
     public $livePushState;
-    /** @var bool Request method for live requests */
+    /** @var string Request method for live requests */
     public $liveRequestMethod;
+    /** @var bool Enable replace animation on AJAX request */
+    public $liveReplaceAnimation;
 
     /**
      * @inheritdoc
@@ -70,6 +72,10 @@ class HtmlInline extends Widget
             $tag->context($this->liveContext)
                 ->pushState($this->livePushState);
             if(isset($this->liveRequestMethod)) { $tag->requestMethod($this->liveRequestMethod); }
+        }
+        //Set replace animation flag
+        if(isset($this->liveReplaceAnimation)) {
+            $tag->replaceAnimation($this->liveReplaceAnimation);
         }
         echo $tag;
     }

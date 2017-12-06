@@ -91,6 +91,17 @@ class HtmlChain extends Object
     }
 
     /**
+     * Set replaceAnimation enable flag
+     * @param bool $enabled
+     * @return $this
+     */
+    public function replaceAnimation($enabled = true) {
+        $enabled = isset($enabled) ? !empty($enabled) : true;
+        $this->liveOptions['replaceAnimation'] = $enabled;
+        return $this;
+    }
+
+    /**
      * Process live options
      */
     protected function processLiveOptions() {
@@ -119,7 +130,7 @@ class HtmlChain extends Object
      */
     protected function getLiveAttributes() {
         $attributes = [];
-        $rawAttributes = ['enabled', 'context', 'pushState', 'confirm', 'method'];
+        $rawAttributes = ['enabled', 'context', 'pushState', 'replaceAnimation', 'confirm', 'method'];
         //Write raw attributes values
         foreach ($rawAttributes as $key) {
             if(!isset($this->liveOptions[$key])) continue;
