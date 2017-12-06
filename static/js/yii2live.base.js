@@ -106,7 +106,8 @@
                 options = {
                     context: self.settings.contexts.page,
                     pushState: true,
-                    requestMethod: 'get'
+                    requestMethod: 'get',
+                    replaceAnimation: true
                 };
                 if(typeof element === "undefined" || !element.length) return options;
                 for (i in options) {
@@ -512,7 +513,8 @@
             },
             //Wrap element
             wrap: function (element) {
-                var animateClass = self.settings.enableReplaceAnimation ? ' animated' : '';
+                var elementAnimated = !!self.utils.getElementOption(element, 'replaceAnimation', self.settings.enableReplaceAnimation);
+                var animateClass = elementAnimated ? ' animated' : '';
                 var wrapperHtml = '<div class="'+self.settings.wrapElementClass+animateClass+' active"></div>', wrapper,
                     elMarginTop = parseInt(element.css('margin-top')), elMarginBottom = parseInt(element.css('margin-bottom')),
                     wrapperCss = {minHeight: element.outerHeight(), maxHeight: element.outerHeight()};
@@ -527,6 +529,7 @@
             //Unwrap element
             unwrap: function (element, time) {
                 time = typeof time !== "undefined" ? time : 800;
+                var elementAnimated = !!self.utils.getElementOption(element, 'replaceAnimation', self.settings.enableReplaceAnimation);
                 var wrapper = element.parent().filter('.' + self.settings.wrapElementClass),
                     wH, wSh, elCss = {},
                     wMarginTop = parseInt(element.css('margin-top')), wMarginBottom = parseInt(element.css('margin-bottom'));
@@ -545,7 +548,7 @@
                     element.css(elCss);
                     element.unwrap('.' + self.settings.wrapElementClass);
                 };
-                if(self.settings.enableReplaceAnimation) {
+                if(elementAnimated) {
                     setTimeout(unwrapCallback, time);
                 } else {
                     unwrapCallback();
