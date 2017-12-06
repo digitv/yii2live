@@ -11,6 +11,9 @@ use yii\web\JsExpression;
  */
 class AlertNotify extends Widget
 {
+    public static $counter = 0;
+    public static $autoIdPrefix = 'alert-notify-';
+
     public $icon;
     public $title;
     public $message;
