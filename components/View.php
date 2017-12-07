@@ -60,8 +60,8 @@ class View extends \yii\web\View
         $content = ob_get_clean();
 
         echo strtr($content, [
-            self::PH_HEAD => $this->renderHeadHtml(),
-            self::PH_BODY_BEGIN => $this->renderBodyBeginHtml(),
+            self::PH_HEAD => $this->renderHeadHtml($ajaxMode),
+            self::PH_BODY_BEGIN => $this->renderBodyBeginHtml($ajaxMode),
             self::PH_BODY_END => $this->renderBodyEndHtml($ajaxMode),
         ]);
 
@@ -71,6 +71,7 @@ class View extends \yii\web\View
     /**
      * Page end on live request
      * @param bool $ajaxMode
+     * @throws \Exception
      */
     public function endPageLive($ajaxMode = false) {
         $this->trigger(self::EVENT_END_PAGE);
@@ -80,9 +81,9 @@ class View extends \yii\web\View
         $this->livePageMeta = $this->getLivePageMeta();
 
         echo strtr($content, [
-            self::PH_HEAD => $this->renderHeadHtml($ajaxMode),
-            self::PH_BODY_BEGIN => $this->renderBodyBeginHtml($ajaxMode),
-            self::PH_BODY_END => $this->renderBodyEndHtml($ajaxMode),
+            self::PH_HEAD => $this->renderHeadHtml($ajaxMode, true),
+            self::PH_BODY_BEGIN => $this->renderBodyBeginHtml($ajaxMode, true),
+            self::PH_BODY_END => $this->renderBodyEndHtml($ajaxMode, true),
         ]);
 
         $this->clear();
@@ -220,9 +221,10 @@ class View extends \yii\web\View
      * Renders the content to be inserted in the head section.
      * The content is rendered using the registered meta tags, link tags, CSS/JS code blocks and files.
      * @param bool $ajaxMode
+     * @param bool $liveMode
      * @return string the rendered content
      */
-    protected function renderHeadHtml($ajaxMode = false)
+    protected function renderHeadHtml($ajaxMode = false, $liveMode = false)
     {
         $lines = [];
         $live = Yii2Live::getSelf();
@@ -262,21 +264,20 @@ class View extends \yii\web\View
      * Renders the content to be inserted at the beginning of the body section.
      * The content is rendered using the registered JS code blocks and files.
      * @param bool $ajaxMode
+     * @param bool $liveMode
      * @return string the rendered content
      */
-    protected function renderBodyBeginHtml($ajaxMode = false)
+    protected function renderBodyBeginHtml($ajaxMode = false, $liveMode = false)
     {
         $lines = [];
-        $live = Yii2Live::getSelf();
-        $isLiveRequest = $live && $live->isLiveRequest();
         $regionFiles = self::getPageRegion(self::POS_BEGIN, 'js');
-        if (!empty($this->jsFiles[self::POS_BEGIN]) && !($ajaxMode && $isLiveRequest)) {
+        if (!empty($this->jsFiles[self::POS_BEGIN]) && !($ajaxMode && $liveMode)) {
             $lines[] = implode("\n", $this->jsFiles[self::POS_BEGIN]);
         }
         if (!empty($this->js[self::POS_BEGIN])) {
             $lines[] = Html::script(implode("\n", $this->js[self::POS_BEGIN]), ['type' => 'text/javascript']);
         }
-        $linesStr = $ajaxMode && $isLiveRequest
+        $linesStr = $ajaxMode
             ? implode("\n", $lines)
             : Html::tag('div', implode("\n", $lines), ['data-live-region' => $regionFiles]);
 
@@ -289,15 +290,15 @@ class View extends \yii\web\View
      * @param bool $ajaxMode whether the view is rendering in AJAX mode.
      * If true, the JS scripts registered at [[POS_READY]] and [[POS_LOAD]] positions
      * will be rendered at the end of the view like normal scripts.
+     * @param bool $liveMode
      * @return string the rendered content
+     * @throws \Exception
      */
-    protected function renderBodyEndHtml($ajaxMode = false)
+    protected function renderBodyEndHtml($ajaxMode = false, $liveMode = false)
     {
         $lines = [];
-        $live = Yii2Live::getSelf();
-        $isLiveRequest = $live && $live->isLiveRequest();
         if ($ajaxMode) {
-            if (!empty($this->jsFiles[self::POS_END]) && !$isLiveRequest) {
+            if (!empty($this->jsFiles[self::POS_END]) && !$liveMode) {
                 $lines[] = implode("\n", $this->jsFiles[self::POS_END]);
             }
             $scripts = [];
