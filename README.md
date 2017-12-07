@@ -16,6 +16,73 @@ or whole page, but only widgets, state of those were changed.
 
 For example your `Nav` widget can decide what to do by itself - render widget fully or just change active link. There are special widget states for this.
 
+## Creating AJAX link
+```
+echo \digitv\yii2live\helpers\Html::a('Ajax link', ['action'])
+    ->ajax(true)
+    ->context(Yii2Live::CONTEXT_TYPE_PARTIAL)
+    ->pushState(false)
+    ->requestMethod('post')
+    ->confirm('Confirm message');
+```
+
+* Link is AJAX enabled (`ajax(true)`),
+* using a `partial` context `context(Yii2Live::CONTEXT_TYPE_PARTIAL)`,
+* page url is not changed on click (`->pushState(false)`),
+* request method is POST (`requestMethod('post')`),
+* and using confirm message (`confirm('Confirm message')`).
+
+## Creating HtmlContainer like a Pjax
+```
+...
+<?php \digitv\yii2live\widgets\PjaxContainer::begin(['id' => 'test-wrapper']) ?>
+    <?= \yii\grid\GridView::widget([
+        ...
+    ]) ?>
+<?php \digitv\yii2live\widgets\PjaxContainer::end() ?>
+...
+```
+All links inside this container will be AJAX enabled. Search form, that will update this container is looks like this:
+```
+<?php $form = ActiveForm::begin([
+    'id' => 'test-search-form',
+    'action' => ['index'],
+    'method' => 'get',
+    'options' => [
+        'data-live-context' => 'test-wrapper',
+    ],
+]); ?>
+...
+<?php ActiveForm::end(); ?>
+```
+
+## Using JS commands
+
+```
+...
+    public function actionTest() {
+        $live = Yii2Live::getSelf();
+        $content = $this->render('test');
+        if($live->isLiveRequest()) {
+            $cmd = $live->commands();
+            return $cmd->jRemove('#remove-selector')
+                ->jHtml('#insert-selector', '<div>New HTML!</div>')
+                ->modalBody($content)
+                ->modalTitle('Modal title')
+                ->messageSuccess('Success message!');
+        } else {
+            return $content;
+        }
+    }
+...
+```
+* jHtml - jQuery.html()
+* modalBody - Set modal body content
+* modalTitle - Set modal title content
+* messageSuccess - Show success message to user
+
+There are much more JS commands that you can use (@see in `digitv\yii2live\components\JsCommand`)
+
 ### _Config options_
 
 |Option                 |Description|
