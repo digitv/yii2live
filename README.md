@@ -65,8 +65,8 @@ All links inside this container will be AJAX enabled. Search form, that will upd
         $content = $this->render('test');
         if($live->isLiveRequest()) {
             $cmd = $live->commands();
-            return $cmd->jRemove('#remove-selector')
-                ->jHtml('#insert-selector', '<div>New HTML!</div>')
+            return $cmd->jHtml('#insert-selector', '<div>New HTML!</div>')
+                ->jRemove('#remove-selector')
                 ->modalBody($content)
                 ->modalTitle('Modal title')
                 ->messageSuccess('Success message!');
@@ -77,6 +77,7 @@ All links inside this container will be AJAX enabled. Search form, that will upd
 ...
 ```
 * jHtml - jQuery.html()
+* jRemove - jQuery.remove()
 * modalBody - Set modal body content
 * modalTitle - Set modal title content
 * messageSuccess - Show success message to user
