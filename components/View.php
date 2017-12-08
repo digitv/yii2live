@@ -34,9 +34,18 @@ class View extends \yii\web\View
 
     public $livePageMeta;
 
+    /** @var string layout file for `live` requests (alias) */
+    public $liveLayout;
+    /** @var string layout file for `live` requests (full file path) */
+    public $liveLayoutFile;
+    /** @var bool flag, that was some rendering */
+    protected $_wasRender = false;
+
     public function init()
     {
         parent::init();
+        $this->liveLayout = Yii2Live::getSelf()->liveLayout;
+        $this->liveLayoutFile = Yii::getAlias($this->liveLayout);
         //Replace layout to minimal needed
         if($this->needToReplaceLayout()) {
             $this->replaceLayout();
@@ -406,6 +415,35 @@ class View extends \yii\web\View
     protected static function needMetaTags() {
         $contextType = Yii2Live::getSelf()->getContextType();
         return $contextType === Yii2Live::CONTEXT_TYPE_PAGE;
+    }
+
+
+    /**
+     * Renders a view file.
+     *
+     * If [[theme]] is enabled (not null), it will try to render the themed version of the view file as long
+     * as it is available.
+     *
+     * The method will call [[FileHelper::localize()]] to localize the view file.
+     *
+     * If [[renderers|renderer]] is enabled (not null), the method will use it to render the view file.
+     * Otherwise, it will simply include the view file as a normal PHP file, capture its output and
+     * return it as a string.
+     *
+     * @param string $viewFile the view file. This can be either an absolute file path or an alias of it.
+     * @param array $params the parameters (name-value pairs) that will be extracted and made available in the view file.
+     * @param object $context the context that the view should use for rendering the view. If null,
+     * existing [[context]] will be used.
+     * @return string the rendering result
+     * @throws ViewNotFoundException if the view file does not exist
+     */
+    public function renderFile($viewFile, $params = [], $context = null)
+    {
+        if(!$this->checkRenderNeed() && $this->_wasRender && $viewFile !== $this->liveLayoutFile) {
+            return '';
+        }
+        $this->_wasRender = true;
+        return parent::renderFile($viewFile, $params, $context);
     }
 
     /**
