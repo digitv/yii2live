@@ -46,6 +46,8 @@ class Yii2Live extends Component implements BootstrapInterface
     public $formSelector = 'form';
     /** @var string Forms selector for javascript code (default, when live load disabled) */
     public $formSelectorAjax = 'form[data-live-context], form[data-live-enabled], [data-live-context] form.gridview-filter-form';
+    /** @var string Form fields selector for javascript code (default, when live load disabled) */
+    public $fieldSelectorAjax = 'form .form-control[data-live-context], form .form-control[data-live-enabled]';
     /** @var bool Enable replacing elements animation */
     public $enableReplaceAnimation = false;
     /** @var bool Enable replacing elements animation */
@@ -118,6 +120,7 @@ class Yii2Live extends Component implements BootstrapInterface
     /**
      * Set widget data for response
      * @param BaseLiveWidget|WidgetBehavior $widget
+     * @throws \yii\base\ExitException
      */
     public function setWidgetData($widget) {
         $widgetId = $widget instanceof BaseLiveWidget ? $widget->id : $widget->owner->id;
@@ -127,7 +130,21 @@ class Yii2Live extends Component implements BootstrapInterface
         if($widget->widgetType === WidgetBehavior::LIVE_WIDGET_TYPE_COMMANDS && !empty($data['data']) && is_array($data['data'])) {
             $response->liveCommands = ArrayHelper::merge($response->liveCommands, $data['data']);
         }
-        $response->livePageWidgets[$widgetId] = $data;
+        //Send response immediately for this context
+        if($this->getContextType() === static::CONTEXT_TYPE_EXACT && $this->getContextId() === $widgetId) {
+            $response->livePageWidgets = [
+                $widgetId => $data,
+            ];
+            /** @var View $view */
+            $view = Yii::$app->view;
+            $response->clearOutputBuffers();
+            $response->content = $view->renderFile($view->liveLayoutFile, [ 'content' => '' ]);
+            $response->data = [];
+            $response->send();
+            Yii::$app->end();
+        } else {
+            $response->livePageWidgets[$widgetId] = $data;
+        }
     }
 
     /**
