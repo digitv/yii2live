@@ -98,5 +98,6 @@ There are much more JS commands that you can use (@see in `digitv\yii2live\compo
 |linkSelectorAjax       |_jQuery selector for links_|
 |formSelector           |_jQuery selector for forms (only when `enableLiveLoad` active)_|
 |formSelectorAjax       |_jQuery selector for forms_|
+|fieldSelectorAjax      |_jQuery selector for form fields (change event)_|
 |messageAdapter         |_Name of message adapter. Used to show messages for user (`alert` or `notify`)_|
 |modalDefaultSelector   |_jQuery selector for default modal popup_|
