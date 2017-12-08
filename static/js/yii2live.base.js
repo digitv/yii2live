@@ -12,6 +12,7 @@
         linkSelectorAjax: "a[data-live-context], a[data-live-enabled], [data-live-context] a",
         formSelector: "form",
         formSelectorAjax: "form[data-live-context], form[data-live-enabled], [data-live-context] form.gridview-filter-form",
+        fieldSelectorAjax: ".form-control[data-live-context], .form-control[data-live-enabled]",
         modalDefaultSelector: '#modal-general',
         wrapElementClass: 'yii2live-element-ajax-wrapper',
         messageAdapter: 'alert',
@@ -141,9 +142,8 @@
     this.callbacks = function () {
         return {
             linkClick: function (e) {
-                var link = $(this), href = link.attr('href'),
-                    ajaxMethod = link.data('liveMethod') || 'get';
-                self.request.ajax(href, {method: ajaxMethod}, link);
+                var link = $(this), href = link.attr('href');
+                self.request.ajax(href, {}, link);
                 return false;
             },
             formSubmit: function (e) {
@@ -159,6 +159,21 @@
                     data: formData
                 };
                 self.request.ajax(url, data, form);
+            },
+            formFieldChange: function (e) {
+                var field = $(this), form = field.parents('form:first'),
+                    method = form.attr('method') || 'post',
+                    url = form.attr('action') || window.location.href,
+                    data, formData;
+                if(method.toLowerCase() === 'post') {
+                    self.utils.formLocationDataAdd(form);
+                }
+                formData = method.toLowerCase() === "post" ? new FormData(form[0]) : form.serialize();
+                self.utils.formLocationDataRemove(form);
+                data = {
+                    data: formData
+                };
+                self.request.ajax(url, data, field);
             },
             popStateChange: function (e) {
                 if(typeof e.state === "undefined" || e.state === null) {
@@ -228,6 +243,9 @@
                 self.loader.activate();
                 if(typeof element !== "undefined") self.activeElement = element;
                 elementOptions = self.utils.getElementOptions(element);
+                if(typeof options.method === "undefined") {
+                    options.method = elementOptions.requestMethod;
+                }
                 options = $.extend({}, rq.getDefaultOptions(), options);
                 options.headers[self.settings.headerNameContext] = elementOptions.context;
                 //Set contentType and processData to false if FormData passed as `data` parameter
@@ -598,6 +616,11 @@
         }).on('submit', formSelector, function (e) {
             e.preventDefault();
             if($(this).hasClass('gridview-filter-form')) $(this).trigger('beforeSubmit');
+        });
+        //Form field change
+        $(document).on('change', self.settings.fieldSelectorAjax, function(e){
+            var field = $(this);
+            return self.callbacks.formFieldChange.apply(field, [e]);
         });
     };
 
