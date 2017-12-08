@@ -13,6 +13,7 @@ use yii\bootstrap\Widget;
  * Base live widget for HTML content
  * @package digitv\yii2live\widgets
  * @method boolean isLiveRequest
+ * @method boolean isThisContext
  */
 class HtmlInline extends Widget
 {
@@ -51,11 +52,8 @@ class HtmlInline extends Widget
         parent::init();
 
         //Clear view data on this widget context
-        if($this->isLiveRequest()) {
-            $live = Yii2Live::getSelf();
-            if($live->getContextType() === Yii2Live::CONTEXT_TYPE_EXACT && $live->getContextId() === $this->id) {
-                Yii::$app->view->clear();
-            }
+        if($this->isLiveRequest() && $this->isThisContext()) {
+            Yii::$app->view->clear();
         }
 
         ob_start();
@@ -87,7 +85,6 @@ class HtmlInline extends Widget
     {
         $content = ob_get_clean();
         $content .= Html::endTag($this->tag);
-        if(!$this->isLiveRequest()) {}
         return $content;
     }
 }
