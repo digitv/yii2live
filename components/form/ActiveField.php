@@ -1,0 +1,399 @@
+<?php
+
+namespace digitv\yii2live\components\form;
+
+use digitv\yii2live\helpers\Html;
+use digitv\yii2live\Yii2Live;
+use Yii;
+use yii\bootstrap\ActiveField as bootstrapActiveField;
+use yii\helpers\ArrayHelper;
+use yii\helpers\Inflector;
+use yii\web\JsExpression;
+
+/**
+ * Class ActiveField
+ * @package digitv\yii2live\components\form
+ */
+class ActiveField extends bootstrapActiveField
+{
+    //Live options
+    protected $liveOptions = [];
+
+    /**
+     * kartik Select2 widget
+     * @param array $items
+     * @param array $options
+     * @return $this
+     */
+    public function select2($items = [], $options = []) {
+        $defaultOptions = [
+            'data' => $items,
+            'theme' => \kartik\widgets\Select2::THEME_BOOTSTRAP,
+            'options' => [
+                'placeholder' => Yii::t('back', 'Please select...'),
+            ],
+            'pluginOptions' => [
+                'allowClear' => empty($options['options']['multiple']) ? true : false,
+            ],
+            'toggleAllSettings' => [
+                'selectLabel' => '<i class="fa fa-check-square-o"></i> ' . Yii::t('back', 'Select all'),
+                'unselectLabel' => '<i class="fa fa-times-rectangle-o"></i> ' . Yii::t('back', 'Remove selection'),
+            ],
+        ];
+        //Check for formatted array data for future use
+        if(!empty($items)) {
+            $firstItem = reset($items);
+            if(is_array($firstItem) && isset($firstItem['text']) && isset($firstItem['id'])) {
+                $simpleItems = ArrayHelper::map($items, 'id','text');
+                $defaultOptions['data'] = $simpleItems;
+                $defaultOptions['pluginOptions']['data'] = $items;
+                $defaultOptions['pluginOptions']['escapeMarkup'] = new JsExpression('function (markup) { return markup; }');
+                $defaultOptions['pluginOptions']['templateResult'] = new JsExpression("function(row){ return row.text; }");
+                $defaultOptions['pluginOptions']['templateSelection'] = new JsExpression("function(row){ return row.text; }");
+                if(isset($firstItem['icon'])) {
+                    $defaultOptions['pluginOptions']['templateResult'] = new JsExpression("function(row){ return '<div class=\"select2-icon-row\"><span class=\"row-icon\">'+row.icon+'</span><span class=\"row-text\"> '+row.text+'</span></div>' }");
+                }
+            }
+        }
+        $options = ArrayHelper::merge($defaultOptions, $options);
+        Html::addCssClass($options['options'], 'compact-form-select2');
+        return $this->widget(\kartik\widgets\Select2::className(), $options);
+    }
+
+    /**
+     * Dependent dropdown
+     * @param array $options
+     * @param bool  $multiple
+     * @param bool  $typeSelect2
+     * @return $this
+     */
+    public function dependentDropDown($options = [], $multiple = false, $typeSelect2 = false) {
+        $defaultOptions = [
+            'options' => [
+                'placeholder' => Yii::t('back', 'Please select...'),
+                'multiple' => !empty($multiple)
+            ],
+            'pluginOptions' => [
+                'placeholder' => Yii::t('back', 'Please select...'),
+            ],
+        ];
+        if($typeSelect2) {
+            $defaultOptions['type'] = \kartik\widgets\DepDrop::TYPE_SELECT2;
+            $defaultOptions['select2Options'] = [
+                'language' => Yii::$app->language,
+                'theme' => \kartik\widgets\Select2::THEME_BOOTSTRAP,
+                'pluginOptions' => [
+                    'allowClear' => false,
+                ],
+                'toggleAllSettings' => [
+                    'selectLabel' => '<i class="fa fa-check-square-o"></i> ' . Yii::t('back', 'Select all'),
+                    'unselectLabel' => '<i class="fa fa-times-rectangle-o"></i> ' . Yii::t('back', 'Remove selection'),
+                ],
+            ];
+        }
+        $options = ArrayHelper::merge($defaultOptions, $options);
+        return $this->widget(\kartik\widgets\DepDrop::className(), $options);
+    }
+
+    /**
+     * kartik TypeAhead widget
+     * @param array $options
+     * @return $this
+     */
+    public function typeAhead($options = []) {
+        return $this->widget(\kartik\widgets\Typeahead::className(), $options);
+    }
+
+
+    /**
+     * DatePicker krajee
+     * @param array $options
+     * @param string  $format
+     * @return $this
+     */
+    public function datePicker($options = [], $format = null) {
+        $defaultOptions = [
+            'convertFormat' => true,
+            'pluginOptions' => [
+                'autoclose' => true,
+                'format' => 'php:Y-m-d',
+            ],
+        ];
+        if(isset($format)) {
+            $defaultOptions['pluginOptions']['format'] = $format;
+        }
+        $options = ArrayHelper::merge($defaultOptions, $options);
+        return $this->widget(\kartik\widgets\DatePicker::className(), $options);
+    }
+
+    /**
+     * DateTimePicker krajee
+     * @param array $options
+     * @param string  $format
+     * @return $this
+     */
+    public function dateTimePicker($options = [], $format = null) {
+        $defaultOptions = [
+            'convertFormat' => true,
+            'pluginOptions' => [
+                'autoclose' => true,
+                'format' => 'php:Y-m-d H:i',
+            ],
+        ];
+        if(isset($format)) {
+            $defaultOptions['pluginOptions']['format'] = $format;
+        }
+        $options = ArrayHelper::merge($defaultOptions, $options);
+        return $this->widget(\kartik\widgets\DateTimePicker::className(), $options);
+    }
+
+    /**
+     * DateRangePicker krajee
+     * @param array $options
+     * @return $this
+     */
+    public function dateRangePicker($options = []) {
+        $defaultOptions = [
+            'presetDropdown' => true,
+            'convertFormat' => true,
+            'options' => [
+                'placeholder' => 'none',
+            ],
+            'pluginOptions' => [
+                'locale' => [
+                    'format' => 'Y-m-d',
+                    'separator' => ' - ',
+                ],
+            ],
+            'hideInput' => true,
+            'pluginEvents' => [
+                'cancel.daterangepicker' => "function(ev, picker) {
+                        $(picker.element).siblings('input').val('').change();
+                        $(picker.element).find('.range-value').html('');
+                        picker.updateView();
+                    }"
+            ]
+        ];
+        $options = ArrayHelper::merge($defaultOptions, $options);
+        return $this->widget(\kartik\daterange\DateRangePicker::className(), $options);
+    }
+
+    /**
+     * Renders ToggleButtonGroup as checkboxes
+     * @param array   $items
+     * @param string  $btnClass
+     * @param array   $options
+     * @return $this the field object itself
+     */
+    public function checkboxButtonGroup($items, $btnClass = 'btn-default', $options = []) {
+        $options = ArrayHelper::merge($options, [
+            'type' => 'checkbox',
+            'items' => $items,
+            'labelOptions' => [
+                'class' => $btnClass,
+            ],
+        ]);
+        return $this->widget(\yii\bootstrap\ToggleButtonGroup::className(), $options);
+    }
+
+    /**
+     * Renders ToggleButtonGroup as radios
+     * @param array   $items
+     * @param string  $btnClass
+     * @param array   $options
+     * @return $this the field object itself
+     */
+    public function radioButtonGroup($items, $btnClass = 'btn-default', $options = []) {
+        $options = ArrayHelper::merge($options, [
+            'type' => 'radio',
+            'items' => $items,
+            'labelOptions' => [
+                'class' => $btnClass,
+            ],
+        ]);
+        $options['emptyOptionAsNone'] = true;
+        return $this->widget(\yii\bootstrap\ToggleButtonGroup::className(), $options);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function input($type, $options = [])
+    {
+        $this->getLiveAttributes(true);
+        return parent::input($type, $options);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function textInput($options = [])
+    {
+        $this->getLiveAttributes(true);
+        return parent::textInput($options);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function textarea($options = [])
+    {
+        $this->getLiveAttributes(true);
+        return parent::textarea($options);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function radio($options = [], $enclosedByLabel = true)
+    {
+        $this->getLiveAttributes(true);
+        return parent::radio($options, $enclosedByLabel);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function checkbox($options = [], $enclosedByLabel = true)
+    {
+        $this->getLiveAttributes(true);
+        return parent::checkbox($options, $enclosedByLabel);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function dropDownList($items, $options = [])
+    {
+        $this->getLiveAttributes(true);
+        return parent::dropDownList($items, $options);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function checkboxList($items, $options = [])
+    {
+        $this->getLiveAttributes(true);
+        return parent::checkboxList($items, $options);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function radioList($items, $options = [])
+    {
+        $this->getLiveAttributes(true);
+        return parent::radioList($items, $options);
+    }
+
+    /**
+     * Renders a widget as the input of the field.
+     *
+     * Note that the widget must have both `model` and `attribute` properties. They will
+     * be initialized with [[model]] and [[attribute]] of this field, respectively.
+     *
+     * If you want to use a widget that does not have `model` and `attribute` properties,
+     * please use [[render()]] instead.
+     *
+     * For example to use the [[MaskedInput]] widget to get some date input, you can use
+     * the following code, assuming that `$form` is your [[ActiveForm]] instance:
+     *
+     * ```php
+     * $form->field($model, 'date')->widget(\yii\widgets\MaskedInput::className(), [
+     *     'mask' => '99/99/9999',
+     * ]);
+     * ```
+     *
+     * If you set a custom `id` for the input element, you may need to adjust the [[$selectors]] accordingly.
+     *
+     * @param string $class the widget class name.
+     * @param array $config name-value pairs that will be used to initialize the widget.
+     * @return $this the field object itself.
+     */
+    public function widget($class, $config = [])
+    {
+        return parent::widget($class, $config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function render($content = null)
+    {
+        return parent::render($content);
+    }
+
+
+
+    /**
+     * Set live AJAX enable flag
+     * @param bool $enable
+     * @return ActiveField
+     */
+    public function ajax($enable = true) {
+        $this->liveOptions['enabled'] = $enable;
+        return $this;
+    }
+
+    /**
+     * Set live context
+     * @param $contextValue
+     * @return ActiveField
+     */
+    public function context($contextValue) {
+        if(!isset($contextValue)) return $this;
+        $this->liveOptions['context'] = $contextValue;
+        if($contextValue !== Yii2Live::CONTEXT_TYPE_PAGE) {
+            $this->pushState(false);
+        }
+        return $this;
+    }
+
+    /**
+     * Set request method
+     * @param string $method
+     * @return ActiveField
+     */
+    public function requestMethod($method = 'get') {
+        $this->liveOptions['method'] = strtolower($method);
+        return $this;
+    }
+
+    /**
+     * Set pushState enable flag
+     * @param bool $enabled
+     * @return ActiveField
+     */
+    public function pushState($enabled = true) {
+        $enabled = isset($enabled) ? !empty($enabled) : true;
+        $this->liveOptions['pushState'] = $enabled;
+        return $this;
+    }
+
+    /**
+     * Get liveOptions as attributes array
+     * @param bool $updateInputOptions
+     * @return array
+     */
+    protected function getLiveAttributes($updateInputOptions = false) {
+        $attributes = [];
+        $rawAttributes = ['enabled', 'context', 'pushState', 'method'];
+        //Write raw attributes values
+        foreach ($rawAttributes as $key) {
+            if(!isset($this->liveOptions[$key])) continue;
+            $attributeName = 'data-live-' . Inflector::camel2id($key);
+            $attributeValue = is_bool($this->liveOptions[$key]) ? (int)$this->liveOptions[$key] : $this->liveOptions[$key];
+            $attributes[$attributeName] = $attributeValue;
+        }
+        //Disable Pjax
+        if(!empty($this->liveOptions['enabled']) || isset($this->liveOptions['context'])) {
+            $attributes['data-pjax'] = 0;
+        }
+        if($updateInputOptions) {
+            $this->inputOptions = ArrayHelper::merge($this->inputOptions, $attributes);
+        }
+
+        return $attributes;
+    }
+}
