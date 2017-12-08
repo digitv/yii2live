@@ -146,6 +146,15 @@ class WidgetBehavior extends Behavior
     }
 
     /**
+     * Check that context is this widget
+     * @return bool
+     */
+    public function isThisContext() {
+        $component = Yii2Live::getSelf();
+        return $component->getContextType() === Yii2Live::CONTEXT_TYPE_EXACT && $component->getContextId() === $this->id;
+    }
+
+    /**
      * Get widget ID
      * @return string
      */
