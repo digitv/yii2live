@@ -53,6 +53,15 @@ class Response extends \yii\web\Response
             'widgets' => $this->livePageWidgets,
             'commands' => $this->liveCommands,
         ];
+        //Return only one widget if context type is `exact`
+        if($component->getContextType() === Yii2Live::CONTEXT_TYPE_EXACT) {
+            $contextId = $component->getContextId();
+            if(isset($data['widgets'][$contextId])) {
+                $data['widgets'] = [
+                    $contextId => $data['widgets'][$contextId],
+                ];
+            }
+        }
         if(is_array($responseData)) {
             $data['content'] = $responseData;
         } elseif ($this->data instanceof ResponseObject) {

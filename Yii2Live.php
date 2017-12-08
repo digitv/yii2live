@@ -57,6 +57,8 @@ class Yii2Live extends Component implements BootstrapInterface
 
     /** @var bool Use Node.js sockets to send response */
     public $useNodeJsTransport = false;
+    /** @var string layout used for live requests (with exact and partial context) */
+    public $liveLayout = '@vendor/digitv/yii2live/views/layout.php';
 
     /** @var bool */
     protected $_isLiveRequest;

@@ -34,7 +34,14 @@ class View extends \yii\web\View
 
     public $livePageMeta;
 
-    protected $_wasRender = false;
+    public function init()
+    {
+        parent::init();
+        //Replace layout to minimal needed
+        if($this->needToReplaceLayout()) {
+            $this->replaceLayout();
+        }
+    }
 
     /**
      * @inheritdoc
@@ -402,30 +409,32 @@ class View extends \yii\web\View
     }
 
     /**
-     * Renders a view file.
-     *
-     * If [[theme]] is enabled (not null), it will try to render the themed version of the view file as long
-     * as it is available.
-     *
-     * The method will call [[FileHelper::localize()]] to localize the view file.
-     *
-     * If [[renderers|renderer]] is enabled (not null), the method will use it to render the view file.
-     * Otherwise, it will simply include the view file as a normal PHP file, capture its output and
-     * return it as a string.
-     *
-     * @param string $viewFile the view file. This can be either an absolute file path or an alias of it.
-     * @param array $params the parameters (name-value pairs) that will be extracted and made available in the view file.
-     * @param object $context the context that the view should use for rendering the view. If null,
-     * existing [[context]] will be used.
-     * @return string the rendering result
-     * @throws ViewNotFoundException if the view file does not exist
+     * Check if there is need to replace layout
+     * @return bool
      */
-    public function renderFile($viewFile, $params = [], $context = null)
-    {
-        if(!$this->checkRenderNeed() && $this->_wasRender) {
-            return null;
+    protected function needToReplaceLayout() {
+        $contextType = Yii2Live::getSelf()->getContextType();
+        return in_array($contextType, [Yii2Live::CONTEXT_TYPE_PARTIAL, Yii2Live::CONTEXT_TYPE_EXACT]);
+    }
+
+    /**
+     * Replace layout for live requests
+     */
+    protected function replaceLayout() {
+        $layout = Yii2Live::getSelf()->liveLayout;
+        Yii::$app->layout = $layout;
+        $controller = Yii::$app->controller;
+        if(!$controller) return;
+        $module = $controller->module;
+        if (is_string($controller->layout)) {
+            $controller->layout = null;
+        } elseif ($controller->layout === null) {
+            while ($module !== null && $module->layout === null) {
+                $module = $module->module;
+            }
+            if ($module !== null && is_string($module->layout)) {
+                $module->layout = null;
+            }
         }
-        $this->_wasRender = true;
-        return parent::renderFile($viewFile, $params, $context);
     }
 }
