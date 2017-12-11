@@ -28,6 +28,8 @@ class ActiveForm extends bootstrapActiveForm
     /** @var array Live options call stack for HtmlChain object */
     protected $liveOptionsStack = [];
 
+    protected $livePushStateOverwritten = false;
+
     /**
      * @inheritdoc
      * @return ActiveField the created ActiveField object
@@ -66,6 +68,7 @@ class ActiveForm extends bootstrapActiveForm
      */
     public function requestMethod($method = 'post') {
         $this->method = strtolower($method);
+        if($this->method === 'get' && !$this->livePushStateOverwritten) $this->pushState(true);
         return $this;
     }
 
@@ -108,6 +111,7 @@ class ActiveForm extends bootstrapActiveForm
      * @return static
      */
     public function pushState($enabled = true) {
+        $this->livePushStateOverwritten = true;
         return $this->addLiveOptionToStack(__FUNCTION__, [$enabled]);
     }
 
