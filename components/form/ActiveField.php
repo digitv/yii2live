@@ -193,7 +193,8 @@ class ActiveField extends bootstrapActiveField
                 'class' => $btnClass,
             ],
         ]);
-        return $this->widget(\yii\bootstrap\ToggleButtonGroup::className(), $options);
+        $widgetClass = ArrayHelper::remove($options, 'class', \yii\bootstrap\ToggleButtonGroup::className());
+        return $this->widget($widgetClass, $options);
     }
 
     /**
@@ -212,7 +213,8 @@ class ActiveField extends bootstrapActiveField
             ],
         ]);
         $options['emptyOptionAsNone'] = true;
-        return $this->widget(\yii\bootstrap\ToggleButtonGroup::className(), $options);
+        $widgetClass = ArrayHelper::remove($options, 'class', \yii\bootstrap\ToggleButtonGroup::className());
+        return $this->widget($widgetClass, $options);
     }
 
     /**
