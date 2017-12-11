@@ -125,6 +125,18 @@ class JsCommand extends Object implements ResponseObject
     }
 
     /**
+     * $.fn.removeAttr
+     * @param string $selector
+     * @param string|array $attributeName
+     * @return JsCommand
+     */
+    public function jRemoveAttr($selector = null, $attributeName = null) {
+        $arguments = [$attributeName];
+        if(isset($attributeValue)) $arguments[] = $attributeValue;
+        return $this->jQuery($selector, 'removeAttr', $arguments);
+    }
+
+    /**
      * $.fn.data
      * $cmd->jData('a#link_1', 'pluginState', '2') OR
      * $cmd->jData('a#link_1', ['pluginState' => '2'])
