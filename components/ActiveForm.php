@@ -60,6 +60,16 @@ class ActiveForm extends bootstrapActiveForm
     }
 
     /**
+     * Set request method
+     * @param string $method
+     * @return static
+     */
+    public function requestMethod($method = 'post') {
+        $this->method = strtolower($method);
+        return $this;
+    }
+
+    /**
      * Set live context
      * @param string $contextValue
      * @return static
