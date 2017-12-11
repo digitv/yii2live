@@ -56,6 +56,14 @@ class Yii2Live extends Component implements BootstrapInterface
     public $messageAdapter = 'alert';
     /** @var string Default modal selector */
     public $modalDefaultSelector = '#modal-default';
+    /** @var bool Render default modal */
+    public $modalDefaultRender = true;
+    /** @var string Default modal ID (for render) */
+    public $modalDefaultId = 'modal-default';
+    /** @var string Default modal size (for render) */
+    public $modalDefaultSize = 'lg';
+    /** @var bool Render modal footer with close button or not (for render) */
+    public $modalDefaultWithFooterClose = true;
 
     /** @var bool Use Node.js sockets to send response */
     public $useNodeJsTransport = false;

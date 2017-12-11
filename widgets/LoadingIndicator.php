@@ -39,7 +39,7 @@ class LoadingIndicator extends Widget
      * @return string
      */
     protected function getLoadingText() {
-        $text = Yii::t('back', 'Loading...');
+        $text = Yii::t('yii2live', 'Loading...');
         return Html::tag('div', $text, ['class' => 'loading-text']);
     }
 

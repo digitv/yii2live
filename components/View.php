@@ -353,11 +353,18 @@ class View extends \yii\web\View
             $lines[] = Html::tag('div', implode("\n", $jsLines), ['data-live-region' => self::getPageRegion(self::POS_END, 'js')]);
         }
 
-        //Add loading indicator
-        if(!Yii::$app->request->isAjax) {
+        $live = Yii2Live::getSelf();
+        if($live && !Yii::$app->request->isAjax) {
+            //Add loading indicator
             $lines[] = LoadingIndicator::widget([
                 'id' => 'yii2-live-loader',
             ]);
+            //Add default modal
+            if($live->modalDefaultRender) {
+                $lines[] = $this->renderFile('@vendor/digitv/yii2live/views/modal-default.php', [
+                    'component' => $live,
+                ]);
+            }
         }
 
         return empty($lines) ? '' : implode("\n", $lines);
