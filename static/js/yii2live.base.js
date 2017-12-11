@@ -89,8 +89,8 @@
                     }
                     return option;
                 } else {
-                    //Handle `requestMethod` option on `form` element
-                    if(optionName === "liveRequestMethod" && element[0].tagName.toLowerCase() === "form" && element.attr('method')) {
+                    //Handle `method` option on `form` element
+                    if(optionName === "liveMethod" && element[0].tagName.toLowerCase() === "form" && element.attr('method')) {
                         return element.attr('method').toLowerCase();
                     }
                 }
@@ -107,7 +107,7 @@
                 options = {
                     context: self.settings.contexts.page,
                     pushState: true,
-                    requestMethod: 'get',
+                    method: 'get',
                     replaceAnimation: true
                 };
                 if(typeof element === "undefined" || !element.length) return options;
@@ -116,7 +116,7 @@
                     options[i] = optionValue;
                 }
                 //disable pushState for POST requests
-                if(options.requestMethod === 'post') options.pushState = false;
+                if(options.method === 'post') options.pushState = false;
                 return options;
             },
             //Add location data fields to form
@@ -244,7 +244,7 @@
                 if(typeof element !== "undefined") self.activeElement = element;
                 elementOptions = self.utils.getElementOptions(element);
                 if(typeof options.method === "undefined") {
-                    options.method = elementOptions.requestMethod;
+                    options.method = elementOptions.method;
                 }
                 options = $.extend({}, rq.getDefaultOptions(), options);
                 options.headers[self.settings.headerNameContext] = elementOptions.context;
