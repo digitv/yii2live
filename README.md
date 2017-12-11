@@ -55,6 +55,17 @@ All links inside this container will be AJAX enabled. Search form, that will upd
 ...
 <?php ActiveForm::end(); ?>
 ```
+or this
+```
+<?php $form = ActiveForm::begin([
+    'id' => 'test-search-form',
+    'action' => ['index'],
+])->ajax(true)
+    ->requestMethod('get')
+    ->context('test-wrapper'); ?>
+...
+<?php ActiveForm::end(); ?>
+```
 
 ## Using JS commands
 
