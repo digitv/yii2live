@@ -112,3 +112,7 @@ There are much more JS commands that you can use (@see in `digitv\yii2live\compo
 |fieldSelectorAjax      |_jQuery selector for form fields (change event)_|
 |messageAdapter         |_Name of message adapter. Used to show messages for user (`alert` or `notify`)_|
 |modalDefaultSelector   |_jQuery selector for default modal popup_|
+|modalDefaultRender     |_Render default modal or not_|
+|modalDefaultId         |_Default modal ID_|
+|modalDefaultSize       |_Default modal size (`sm`/`lg` or `empty`)_|
+|modalDefaultWithFooterClose|_Show close button in modal footer_|

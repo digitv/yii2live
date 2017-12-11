@@ -1,10 +1,11 @@
 <?php
 /** @var $component \digitv\yii2live\Yii2Live */
+$modalSizeClass = !empty($component->modalDefaultSize) ? ' modal-' . $component->modalDefaultSize : '';
 ?>
 <!-- Default Yii2Live modal -->
 <div class="modal fade" id="<?= $component->modalDefaultId ?>" data-loading-text="<?= Yii::t('yii2live', 'Loading...') ?>"
      data-title="<?= Yii::t('yii2live', 'Details') ?>">
-    <div class="modal-dialog modal-<?= $component->modalDefaultSize ?>">
+    <div class="modal-dialog<?= $modalSizeClass ?>">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
