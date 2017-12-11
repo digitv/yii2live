@@ -60,6 +60,30 @@ class HtmlChain extends Object
     }
 
     /**
+     * Set live context to Yii2Live::CONTEXT_TYPE_PARTIAL (shortcut)
+     * @return HtmlChain
+     */
+    public function contextPartial() {
+        return $this->context(Yii2Live::CONTEXT_TYPE_PARTIAL);
+    }
+
+    /**
+     * Set live context to Yii2Live::CONTEXT_TYPE_PARENT (shortcut)
+     * @return HtmlChain
+     */
+    public function contextParent() {
+        return $this->context(Yii2Live::CONTEXT_TYPE_PARENT);
+    }
+
+    /**
+     * Set live context to Yii2Live::CONTEXT_TYPE_PAGE (shortcut)
+     * @return HtmlChain
+     */
+    public function contextPage() {
+        return $this->context(Yii2Live::CONTEXT_TYPE_PAGE);
+    }
+
+    /**
      * Set confirm message
      * @param string $message
      * @return HtmlChain
