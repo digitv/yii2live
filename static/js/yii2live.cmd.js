@@ -70,21 +70,27 @@ yii2liveCmd = function (self) {
         },
         //Pjax methods
         cmdPjax: function (method, args) {
-            var container = $(args[0].container);
+            var container = $(args[0].container), time = typeof args[0].time !== "undefined" ? parseInt(args[0].time) : 0;
             if(container.length && container.hasClass('yii2-live-widget') && container.data('liveContext')) {
                 return this.cmdPjaxContainer(method, args);
             }
             if(typeof jQuery.pjax === "undefined" || typeof jQuery.pjax[method] !== "function") return;
+            if(time) {
+                setTimeout(function () {
+                    jQuery.pjax[method].apply(null, args);
+                }, time);
+                return;
+            }
             return jQuery.pjax[method].apply(null, args);
         },
         //Pjax methods (for live container)
         cmdPjaxContainer: function (method, args) {
-            var container = $(args[0].container);
+            var container = $(args[0].container), time = typeof args[0].time !== "undefined" ? parseInt(args[0].time) : 20;
             if(!container.length) return;
             if(method === 'reload') {
                 setTimeout(function () {
                     yii2live.request.ajax(window.location.href, {}, container);
-                }, 20);
+                }, time);
             }
         },
         //Message methods

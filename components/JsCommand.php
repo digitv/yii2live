@@ -2,6 +2,7 @@
 
 namespace digitv\yii2live\components;
 
+use digitv\yii2live\Yii2Live;
 use Yii;
 use yii\base\Object;
 
@@ -307,6 +308,22 @@ class JsCommand extends Object implements ResponseObject
             'args' => [$params],
         ];
         return $this->addCommand($command);
+    }
+
+    /**
+     * Reload current context (HtmlContainer or page)
+     * @param int  $time Time in milliseconds.
+     * @param string $contextId context ID
+     * @return JsCommand
+     */
+    public function reloadContext($time = 100, $contextId = null) {
+        $live = Yii2Live::getSelf();
+        if($live->getContextType() === Yii2Live::CONTEXT_TYPE_EXACT || isset($contextId)) {
+            $contextId = isset($contextId) ? $contextId : $live->getContextId();
+            $selector = '#' . $contextId;
+            return $this->pjaxReload(['container' => $selector, 'time' => $time]);
+        }
+        return $this->live('utils.pageReload', [$time]);
     }
 
     /**

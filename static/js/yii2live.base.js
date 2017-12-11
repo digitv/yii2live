@@ -134,6 +134,14 @@
             //Remove location data fields from form
             formLocationDataRemove: function (form) {
                 form.find('.location-data-field').remove();
+            },
+            //Reload current page
+            pageReload: function (time) {
+                if(typeof time !== "undefined" && time) {
+                    setTimeout(function () { window.location.reload(); }, parseInt(time));
+                } else {
+                    window.location.reload();
+                }
             }
         }
     }();
