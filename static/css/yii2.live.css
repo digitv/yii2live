@@ -12,20 +12,26 @@
     position: static;
     height: 0;
 }
-.yii2-live-loading-indicator .message-area {
+.yii2-live-loading-indicator .messages-part {
     position: fixed;
     z-index: 9999999;
     bottom: 10px;
     right: 10px;
     background: #5ccc5a;
     color: #FFF;
-    padding: 5px 34px 5px 12px;
+    padding: 5px 12px 5px 12px;
     min-height: 34px;
     box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     transform: translate(0, 150%);
     transition: transform 0.3s ease 0.2s;
+    max-width: 90%;
+    width: 300px;
 }
-.yii2-live-loading-indicator.active .message-area {
+.yii2-live-loading-indicator .message-area {
+    position: relative;
+    padding: 0 26px 0 0;
+}
+.yii2-live-loading-indicator.active .messages-part {
     transform: translate(0, 0);
     transition: transform 0.2s ease 0s;
 }
@@ -41,9 +47,29 @@
     width: 24px;
     height: 24px;
     position: absolute;
-    right: 5px;
+    right: 0;
     top: 50%;
     margin-top: -12px;
+}
+.yii2-live-loading-indicator .progress-message {
+    position: relative;
+    padding: 0 26px 0 0;
+    font-size: 12px;
+}
+.yii2-live-loading-indicator .progress-message .icon {
+    font-size: 16px;
+    text-align: center;
+    line-height: 24px;
+    width: 24px;
+    height: 24px;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    margin-top: -11px;
+    display: none;
+}
+.yii2-live-loading-indicator .progress-message.finished .icon {
+    display: inline-block;
 }
 .yii2-live-loading-indicator .loading-overlay {
     position: fixed;

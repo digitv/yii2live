@@ -320,10 +320,34 @@
             activate: function () {
                 var elem = self.loader.getElem();
                 elem.addClass('active');
+                self.loader.clearProgressMessages();
             },
             deActivate: function () {
                 var elem = self.loader.getElem();
                 elem.removeClass('active');
+            },
+            getElemProgressMessages: function () {
+                var elem = self.loader.getElem();
+                return elem.length ? elem.find('.progress-messages-area') : [];
+            },
+            getElemProgressMessage: function (key) {
+                var wrap = self.loader.getElemProgressMessages();
+                return wrap.length ? wrap.find('[data-key="'+key+'"]') : [];
+            },
+            addProgressMessage: function (message, key) {
+                var messageElem = $('<div class="progress-message">'+message+'</div>');
+                messageElem.attr('data-key', key);
+                var wrap = self.loader.getElemProgressMessages(), messageElemExistent = self.loader.getElemProgressMessage(key);
+                if(messageElemExistent.length) messageElemExistent.remove();
+                if(wrap.length) wrap.append(messageElem);
+            },
+            finishProgressMessage: function (key) {
+                var messageElem = self.loader.getElemProgressMessage(key);
+                if(messageElem.length) messageElem.addClass('finished');
+            },
+            clearProgressMessages: function () {
+                var wrap = self.loader.getElemProgressMessages();
+                if(wrap.length) wrap.html('');
             }
         };
     }();
@@ -646,8 +670,27 @@
     Yii2Live.prototype.settings = this.settingsUtils;
     Yii2Live.prototype.ajaxCmd = this.ajaxCmd;
     Yii2Live.prototype.dom = this.dom;
+    Yii2Live.prototype.loader = this.loader;
 
     return Yii2Live;
 });
 
 //yii2Live = new Yii2Live();
+
+if(typeof YiiNodeSockets !== "undefined" && typeof YiiNodeSockets.callbacks !== "undefined") {
+    //just test callback to show how it must be written
+    YiiNodeSockets.callbacks.yii2liveLoaderCallback = function (message, _socket) {
+        if(typeof yii2live === "undefined") return;
+        switch (message.body.type) {
+            case 'addMessage':
+                yii2live.loader.addProgressMessage(message.body.message, message.body.messageKey);
+                break;
+            case 'finishMessage':
+                yii2live.loader.finishProgressMessage(message.body.messageKey);
+                break;
+            case 'flushMessages':
+                yii2live.loader.clearProgressMessages();
+                break;
+        }
+    };
+}
