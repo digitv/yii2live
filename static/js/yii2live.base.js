@@ -328,7 +328,7 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
                 self.loader.clearProgressMessages();
             },
             deActivate: function () {
-                var elem = self.loader.getElem(), activateMaxTime = Date.now() - 300;
+                var elem = self.loader.getElem(), activateMaxTime = Date.now() - 500;
                 if(loaderSelf.activateTime > activateMaxTime) {
                     setTimeout(function () {
                         elem.removeClass('active');
@@ -353,6 +353,7 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
                 var wrap = self.loader.getElemProgressMessages(), messageElemExistent = self.loader.getElemProgressMessage(key);
                 if(messageElemExistent.length) messageElemExistent.remove();
                 if(wrap.length) wrap.append(messageElem);
+                messageElem.data('addedTime', Date.now());
                 if(finished) self.loader.finishProgressMessage(messageElem);
             },
             finishProgressMessage: function (key) {
@@ -360,8 +361,17 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
                 if(messageElem.length) messageElem.addClass('finished');
             },
             clearProgressMessages: function () {
-                var wrap = self.loader.getElemProgressMessages();
-                if(wrap.length) wrap.html('');
+                var wrap = self.loader.getElemProgressMessages(), addedMaxTime = Date.now() - 2000;
+                if(!wrap.length) return;
+                wrap.find('.progress-message').each(function () {
+                    var messageElem = $(this), addedTime = parseInt(messageElem.data('addedTime'));
+                    addedTime = isNaN(addedTime) ? 0 : addedTime;
+                    if(addedTime > addedMaxTime) {
+                        setTimeout(function () { messageElem.remove(); }, addedTime - addedMaxTime);
+                    } else {
+                        messageElem.remove();
+                    }
+                });
             }
         };
     }();

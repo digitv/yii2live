@@ -278,7 +278,7 @@ class Yii2Live extends Component implements BootstrapInterface
      * @return bool|mixed
      */
     public function progressMessageAdd($message, $key = null, $finished = false) {
-        if(!$this->isSocketsActive()) return false;
+        if(!$this->enable || !$this->isSocketsActive()) return false;
         $frame = new YiiNodeSocketFrameLoader();
         $frame->addProgressMessage($message, $key, $finished);
         return $frame->sendToThis();
@@ -290,7 +290,7 @@ class Yii2Live extends Component implements BootstrapInterface
      * @return bool|mixed
      */
     public function progressMessageFinish($key) {
-        if(!$this->isSocketsActive()) return false;
+        if(!$this->enable || !$this->isSocketsActive()) return false;
         $frame = new YiiNodeSocketFrameLoader();
         $frame->finishProgressMessage($key);
         return $frame->sendToThis();
