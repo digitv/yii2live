@@ -1,3 +1,5 @@
+if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
+
 (function (global, factory) {
     global.Yii2Live = factory();
 })(this, function () {
@@ -313,6 +315,8 @@
 
     //Loading animation
     this.loader = function () {
+        this.activateTime = 0;
+        var loaderSelf = this;
         return {
             getElem: function () {
                 return $('.yii2-live-loading-indicator:first');
@@ -320,11 +324,18 @@
             activate: function () {
                 var elem = self.loader.getElem();
                 elem.addClass('active');
+                loaderSelf.activateTime = Date.now();
                 self.loader.clearProgressMessages();
             },
             deActivate: function () {
-                var elem = self.loader.getElem();
-                elem.removeClass('active');
+                var elem = self.loader.getElem(), activateMaxTime = Date.now() - 300;
+                if(loaderSelf.activateTime > activateMaxTime) {
+                    setTimeout(function () {
+                        elem.removeClass('active');
+                    }, loaderSelf.activateTime - activateMaxTime);
+                } else {
+                    elem.removeClass('active');
+                }
             },
             getElemProgressMessages: function () {
                 var elem = self.loader.getElem();
