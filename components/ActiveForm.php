@@ -73,10 +73,8 @@ class ActiveForm extends bootstrapActiveForm
         //Node.js sockets
         $nodeJsTrigger = $component->getContextType() !== Yii2Live::CONTEXT_TYPE_EXACT
             || ($component->getContextType() === Yii2Live::CONTEXT_TYPE_EXACT && $component->getContextId() === $this->id);
-        if(isset($this->title) && $nodeJsTrigger && $component->isSocketsActive()) {
-            $frame = new YiiNodeSocketFrameLoader();
-            $frame->addProgressMessage($this->title . '...', $this->id);
-            $frame->sendToThis();
+        if(isset($this->title) && $nodeJsTrigger) {
+            $component->progressMessageAdd($this->title . '...', $this->id);
         }
         return true;
     }
@@ -108,10 +106,8 @@ class ActiveForm extends bootstrapActiveForm
         //Node.js sockets
         $nodeJsTrigger = $component->getContextType() !== Yii2Live::CONTEXT_TYPE_EXACT
             || ($component->getContextType() === Yii2Live::CONTEXT_TYPE_EXACT && $component->getContextId() === $this->id);
-        if(isset($this->title) && $nodeJsTrigger && $component->isSocketsActive()) {
-            $frame = new YiiNodeSocketFrameLoader();
-            $frame->finishProgressMessage($this->id);
-            $frame->sendToThis();
+        if(isset($this->title) && $nodeJsTrigger) {
+            $component->progressMessageFinish($this->id);
         }
         return parent::afterRun($result);
     }

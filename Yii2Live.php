@@ -9,6 +9,7 @@ use digitv\yii2live\components\Request;
 use digitv\yii2live\components\Response;
 use digitv\yii2live\components\View;
 use digitv\yii2live\widgets\BaseLiveWidget;
+use digitv\yii2live\yii2sockets\YiiNodeSocketFrameLoader;
 use Yii;
 use yii\base\Application;
 use yii\base\BootstrapInterface;
@@ -267,6 +268,32 @@ class Yii2Live extends Component implements BootstrapInterface
             }
         }
         return $this->_hasNodeSockets;
+    }
+
+    /**
+     * Add progress message
+     * @param string $message
+     * @param string $key
+     * @param bool $finished
+     * @return bool|mixed
+     */
+    public function progressMessageAdd($message, $key, $finished = false) {
+        if(!$this->isSocketsActive()) return false;
+        $frame = new YiiNodeSocketFrameLoader();
+        $frame->addProgressMessage($message, $key, $finished);
+        return $frame->sendToThis();
+    }
+
+    /**
+     * Progress message finish
+     * @param string $key
+     * @return bool|mixed
+     */
+    public function progressMessageFinish($key) {
+        if(!$this->isSocketsActive()) return false;
+        $frame = new YiiNodeSocketFrameLoader();
+        $frame->finishProgressMessage($key);
+        return $frame->sendToThis();
     }
 
     /**

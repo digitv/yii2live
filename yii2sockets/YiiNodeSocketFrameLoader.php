@@ -24,18 +24,21 @@ class YiiNodeSocketFrameLoader extends YiiNodeSocketFrameBasic
     protected $_type;
     protected $_progressMessage;
     protected $_progressMessageKey;
+    protected $_progressMessageFinished;
 
     /**
      * Add loader progress message
      * @param string $message
      * @param string $key
+     * @param bool   $finished
      * @return static
      */
-    public function addProgressMessage($message = null, $key = null) {
+    public function addProgressMessage($message = null, $key = null, $finished = false) {
         if(!isset($message)) return $this;
         if(!isset($key)) $key = 'progress-message-' . ceil(microtime(true) * 1000);
         $this->_progressMessage = $message;
         $this->_progressMessageKey = $key;
+        $this->_progressMessageFinished = !!$finished;
         $this->type = static::TYPE_ADD_MESSAGE;
         return $this;
     }
@@ -92,6 +95,7 @@ class YiiNodeSocketFrameLoader extends YiiNodeSocketFrameBasic
                 $icon = Html::tag('i', '', ['class' => $this->progressMessageIconClass . ' icon']);
                 $body['message'] = $this->_progressMessage . $icon;
                 $body['messageKey'] = $this->_progressMessageKey;
+                $body['messageFinished'] = $this->_progressMessageFinished;
                 break;
             case static::TYPE_FINISH_MESSAGE:
                 $body['messageKey'] = $this->_progressMessageKey;

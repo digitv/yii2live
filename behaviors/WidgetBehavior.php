@@ -69,10 +69,8 @@ class WidgetBehavior extends Behavior
         //Node.js sockets
         $nodeJsTrigger = $component->getContextType() !== Yii2Live::CONTEXT_TYPE_EXACT
             || ($component->getContextType() === Yii2Live::CONTEXT_TYPE_EXACT && $component->getContextId() === $this->id);
-        if(isset($this->owner->title) && $nodeJsTrigger && $component->isSocketsActive()) {
-            $frame = new YiiNodeSocketFrameLoader();
-            $frame->finishProgressMessage($this->id);
-            $frame->sendToThis();
+        if(isset($this->owner->title) && $nodeJsTrigger) {
+            $component->progressMessageFinish($this->id);
         }
         if(isset($this->owner->widgetResult) && !empty($this->owner->widgetResult)) {
             $this->setLiveWidgetData($this->owner->widgetResult);
@@ -99,10 +97,8 @@ class WidgetBehavior extends Behavior
         //Node.js sockets
         $nodeJsTrigger = $component->getContextType() !== Yii2Live::CONTEXT_TYPE_EXACT
             || ($component->getContextType() === Yii2Live::CONTEXT_TYPE_EXACT && $component->getContextId() === $this->id);
-        if(isset($this->owner->title) && $nodeJsTrigger && $component->isSocketsActive()) {
-            $frame = new YiiNodeSocketFrameLoader();
-            $frame->addProgressMessage($this->owner->title . '...', $this->id);
-            $frame->sendToThis();
+        if(isset($this->owner->title) && $nodeJsTrigger) {
+            $component->progressMessageAdd($this->owner->title . '...', $this->id);
         }
         $this->preProcessWidgetStack();
     }
