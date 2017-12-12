@@ -4,6 +4,8 @@ namespace digitv\yii2live\components;
 
 use digitv\yii2live\components\form\ActiveField;
 use digitv\yii2live\Yii2Live;
+use digitv\yii2live\yii2sockets\YiiNodeSocketFrameLoader;
+use yii\base\Event;
 use yii\base\InvalidCallException;
 use yii\bootstrap\ActiveForm as bootstrapActiveForm;
 use yii\helpers\ArrayHelper;
@@ -24,11 +26,20 @@ class ActiveForm extends bootstrapActiveForm
      * @see fieldConfig
      */
     public $fieldClass = 'digitv\yii2live\components\form\ActiveField';
+    /** @var string Title for loading progress messages */
+    public $title;
 
     /** @var array Live options call stack for HtmlChain object */
     protected $liveOptionsStack = [];
 
     protected $livePushStateOverwritten = false;
+
+    public function init()
+    {
+        $this->on(static::EVENT_INIT, [$this, 'afterInit']);
+        parent::init();
+        $this->trigger(self::EVENT_INIT);
+    }
 
     /**
      * @inheritdoc
@@ -50,6 +61,59 @@ class ActiveForm extends bootstrapActiveForm
     {
         $this->applyLiveOptionsStack();
         parent::run();
+    }
+
+    /**
+     * After init
+     * @param Event $event
+     * @return bool
+     */
+    public function afterInit($event = null) {
+        $component = Yii2Live::getSelf();
+        //Node.js sockets
+        $nodeJsTrigger = $component->getContextType() !== Yii2Live::CONTEXT_TYPE_EXACT
+            || ($component->getContextType() === Yii2Live::CONTEXT_TYPE_EXACT && $component->getContextId() === $this->id);
+        if(isset($this->title) && $nodeJsTrigger && $component->isSocketsActive()) {
+            $frame = new YiiNodeSocketFrameLoader();
+            $frame->addProgressMessage($this->title . '...', $this->id);
+            $frame->sendToThis();
+        }
+        return true;
+    }
+
+    /**
+     * This method is invoked right after a widget is executed.
+     *
+     * The method will trigger the [[EVENT_AFTER_RUN]] event. The return value of the method
+     * will be used as the widget return value.
+     *
+     * If you override this method, your code should look like the following:
+     *
+     * ```php
+     * public function afterRun($result)
+     * {
+     *     $result = parent::afterRun($result);
+     *     // your custom code here
+     *     return $result;
+     * }
+     * ```
+     *
+     * @param mixed $result the widget return result.
+     * @return mixed the processed widget result.
+     * @since 2.0.11
+     */
+    public function afterRun($result)
+    {
+        $component = Yii2Live::getSelf();
+        //Node.js sockets
+        $nodeJsTrigger = $component->getContextType() !== Yii2Live::CONTEXT_TYPE_EXACT
+            || ($component->getContextType() === Yii2Live::CONTEXT_TYPE_EXACT && $component->getContextId() === $this->id);
+        if(isset($this->title) && $nodeJsTrigger && $component->isSocketsActive()) {
+            $frame = new YiiNodeSocketFrameLoader();
+            $frame->finishProgressMessage($this->id);
+            $frame->sendToThis();
+        }
+        return parent::afterRun($result);
     }
 
     /**
