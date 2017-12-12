@@ -697,7 +697,8 @@ if(typeof YiiNodeSockets !== "undefined" && typeof YiiNodeSockets.callbacks !== 
         if(typeof yii2live === "undefined") return;
         switch (message.body.type) {
             case 'addMessage':
-                yii2live.loader.addProgressMessage(message.body.message, message.body.messageKey);
+                var finished = parseInt(message.body.messageFinished) === 1;
+                yii2live.loader.addProgressMessage(message.body.message, message.body.messageKey, finished);
                 break;
             case 'finishMessage':
                 yii2live.loader.finishProgressMessage(message.body.messageKey);
