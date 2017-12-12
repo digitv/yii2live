@@ -3,6 +3,7 @@
 namespace digitv\yii2live\behaviors;
 
 use digitv\yii2live\Yii2Live;
+use digitv\yii2live\yii2sockets\YiiNodeSocketFrameLoader;
 use Yii;
 use yii\base\Behavior;
 use yii\base\Widget;
@@ -64,6 +65,15 @@ class WidgetBehavior extends Behavior
      * @param WidgetEvent $event
      */
     public function afterRun($event) {
+        $component = Yii2Live::getSelf();
+        //Node.js sockets
+        $nodeJsTrigger = $component->getContextType() !== Yii2Live::CONTEXT_TYPE_EXACT
+            || ($component->getContextType() === Yii2Live::CONTEXT_TYPE_EXACT && $component->getContextId() === $this->id);
+        if(isset($this->owner->title) && $nodeJsTrigger && $component->isSocketsActive()) {
+            $frame = new YiiNodeSocketFrameLoader();
+            $frame->finishProgressMessage($this->id);
+            $frame->sendToThis();
+        }
         if(isset($this->owner->widgetResult) && !empty($this->owner->widgetResult)) {
             $this->setLiveWidgetData($this->owner->widgetResult);
         } else {
@@ -85,6 +95,15 @@ class WidgetBehavior extends Behavior
      * @param $event
      */
     public function afterInit($event) {
+        $component = Yii2Live::getSelf();
+        //Node.js sockets
+        $nodeJsTrigger = $component->getContextType() !== Yii2Live::CONTEXT_TYPE_EXACT
+            || ($component->getContextType() === Yii2Live::CONTEXT_TYPE_EXACT && $component->getContextId() === $this->id);
+        if(isset($this->owner->title) && $nodeJsTrigger && $component->isSocketsActive()) {
+            $frame = new YiiNodeSocketFrameLoader();
+            $frame->addProgressMessage($this->owner->title . '...', $this->id);
+            $frame->sendToThis();
+        }
         $this->preProcessWidgetStack();
     }
 

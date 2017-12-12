@@ -4,6 +4,7 @@ namespace digitv\yii2live\widgets;
 
 use digitv\yii2live\behaviors\WidgetBehavior;
 use digitv\yii2live\Yii2Live;
+use Yii;
 
 /**
  * Class Breadcrumbs
@@ -13,6 +14,9 @@ use digitv\yii2live\Yii2Live;
  */
 class Breadcrumbs extends \yii\widgets\Breadcrumbs
 {
+    /** @var string Title for loading progress messages */
+    public $title;
+
     /**
      * @inheritdoc
      */
@@ -28,6 +32,7 @@ class Breadcrumbs extends \yii\widgets\Breadcrumbs
 
     public function init()
     {
+        if(!isset($this->title)) $this->title = Yii::t('yii2live', 'Breadcrumbs');
         parent::init();
         $this->id = $this->options['id'];
     }

@@ -34,6 +34,8 @@ class Yii2Live extends Component implements BootstrapInterface
     public $enable = true;
     /** @var bool Enable page loading by ajax */
     public $enableLiveLoad = true;
+    /** @var bool Use Node.js sockets for messages */
+    public $useNodeJs = false;
     /** @var string Header name used for AJAX requests */
     public $headerName = 'X-Yii2-Live';
     /** @var string Header name used for AJAX request context */
@@ -78,6 +80,8 @@ class Yii2Live extends Component implements BootstrapInterface
     protected $_requestContextType;
     /** @var string */
     protected $_requestContext;
+    /** @var bool */
+    protected $_hasNodeSockets;
     /** @var self */
     protected static $self;
 
@@ -247,6 +251,22 @@ class Yii2Live extends Component implements BootstrapInterface
      */
     public function attributes() {
         return PageAttributes::getInstance();
+    }
+
+    /**
+     * Check that node.js sockets is connected
+     * @return bool
+     */
+    public function isSocketsActive() {
+        if(!isset($this->_hasNodeSockets)) {
+            $components = Yii::$app->components;
+            if(!$this->useNodeJs || !isset($components['nodeSockets'])) {
+                $this->_hasNodeSockets = false;
+            } else {
+                $this->_hasNodeSockets = Yii::$app->nodeSockets->hasSocketConnected();
+            }
+        }
+        return $this->_hasNodeSockets;
     }
 
     /**

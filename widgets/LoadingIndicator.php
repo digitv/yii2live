@@ -68,8 +68,10 @@ class LoadingIndicator extends Widget
             $this->getLoader(),
         ];
         $messageArea = Html::tag('div', implode("\n", $messageContent), ['class' => 'message-area']);
+        $progressMessagesArea = Html::tag('div', '', ['class' => 'progress-messages-area']);
+        $messagesPart = Html::tag('div', implode("\n", [$messageArea, $progressMessagesArea]), ['class' => 'messages-part']);
         $content = [
-            $messageArea,
+            $messagesPart,
             $this->getLoadingOverlay(),
         ];
         return Html::tag('div', implode("\n", $content), $this->options);

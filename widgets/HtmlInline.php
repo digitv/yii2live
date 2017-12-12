@@ -5,6 +5,7 @@ namespace digitv\yii2live\widgets;
 use digitv\yii2live\behaviors\WidgetBehavior;
 use digitv\yii2live\helpers\Html;
 use digitv\yii2live\Yii2Live;
+use digitv\yii2live\yii2sockets\YiiNodeSocketFrameLoader;
 use Yii;
 use yii\bootstrap\Widget;
 
@@ -18,6 +19,8 @@ use yii\bootstrap\Widget;
 class HtmlInline extends Widget
 {
     public $tag = 'div';
+    /** @var string Title for loading progress messages */
+    public $title;
 
     public $widgetResult;
     /** @var bool Enable like old good Pjax */
