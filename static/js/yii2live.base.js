@@ -342,15 +342,18 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
                 return elem.length ? elem.find('.progress-messages-area') : [];
             },
             getElemProgressMessage: function (key) {
+                if(typeof key === "object" && typeof key.length !== "undefined") return key;
                 var wrap = self.loader.getElemProgressMessages();
                 return wrap.length ? wrap.find('[data-key="'+key+'"]') : [];
             },
-            addProgressMessage: function (message, key) {
+            addProgressMessage: function (message, key, finished) {
                 var messageElem = $('<div class="progress-message">'+message+'</div>');
+                finished = typeof finished !== "undefined" ? !!finished : false;
                 messageElem.attr('data-key', key);
                 var wrap = self.loader.getElemProgressMessages(), messageElemExistent = self.loader.getElemProgressMessage(key);
                 if(messageElemExistent.length) messageElemExistent.remove();
                 if(wrap.length) wrap.append(messageElem);
+                if(finished) self.loader.finishProgressMessage(messageElem);
             },
             finishProgressMessage: function (key) {
                 var messageElem = self.loader.getElemProgressMessage(key);
