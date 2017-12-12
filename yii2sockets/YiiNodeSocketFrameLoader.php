@@ -34,11 +34,11 @@ class YiiNodeSocketFrameLoader extends YiiNodeSocketFrameBasic
      * @return static
      */
     public function addProgressMessage($message = null, $key = null, $finished = false) {
-        if(!isset($message)) return $this;
-        if(!isset($key)) $key = 'progress-message-' . ceil(microtime(true) * 1000);
+        if(!isset($message) || !is_string($message) || trim($message) === "") return $this;
+        if(!isset($key) || !is_string($key) || trim($key) === "") $key = 'progress-message-' . ceil(microtime(true) * 1000);
         $this->_progressMessage = $message;
         $this->_progressMessageKey = $key;
-        $this->_progressMessageFinished = !!$finished;
+        $this->_progressMessageFinished = $finished ? 1 : 0;
         $this->type = static::TYPE_ADD_MESSAGE;
         return $this;
     }
@@ -74,6 +74,14 @@ class YiiNodeSocketFrameLoader extends YiiNodeSocketFrameBasic
     }
 
     /**
+     * Get frame subtype
+     * @return string
+     */
+    public function getType() {
+        return $this->_type;
+    }
+
+    /**
      * Validate input
      * @return bool
      */
@@ -100,7 +108,12 @@ class YiiNodeSocketFrameLoader extends YiiNodeSocketFrameBasic
             case static::TYPE_FINISH_MESSAGE:
                 $body['messageKey'] = $this->_progressMessageKey;
                 break;
+            case static::TYPE_FLUSH_MESSAGES:
+                break;
+            default:
+                return $this;
         }
         $this->setBody($body);
+        return $this;
     }
 }
