@@ -7,6 +7,9 @@
 .yii2-live-widget {
     overflow: hidden;
 }
+#page-content {
+    overflow: visible;
+}
 
 .yii2-live-loading-indicator {
     position: static;
