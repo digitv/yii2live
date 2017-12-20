@@ -180,3 +180,6 @@
         min-width: 0;
     }
 }
+@media print {
+    .yii2-live-loading-indicator { display: none; }
+}
