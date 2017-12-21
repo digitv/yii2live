@@ -5,6 +5,7 @@ namespace digitv\yii2live\components;
 use digitv\yii2live\Yii2Live;
 use Yii;
 use yii\base\Object;
+use yii\helpers\Url;
 
 /**
  * Class JsCommand
@@ -324,6 +325,17 @@ class JsCommand extends Object implements ResponseObject
             return $this->pjaxReload(['container' => $selector, 'time' => $time]);
         }
         return $this->live('utils.pageReload', [$time]);
+    }
+
+    /**
+     * Redirect user to page
+     * @param string|array $url
+     * @param int $time
+     * @return JsCommand
+     */
+    public function redirect($url, $time = 100) {
+        if(is_array($url)) $url = Url::to($url);
+        return $this->live('utils.pageRedirect', [$url, $time]);
     }
 
     /**

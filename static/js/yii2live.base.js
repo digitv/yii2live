@@ -144,6 +144,14 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
                 } else {
                     window.location.reload();
                 }
+            },
+            //Redirect user to page
+            pageRedirect: function (url, time) {
+                if(typeof time !== "undefined" && time) {
+                    setTimeout(function () { window.location.href = url; }, parseInt(time));
+                } else {
+                    window.location.href = url;
+                }
             }
         }
     }();
