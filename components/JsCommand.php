@@ -317,7 +317,7 @@ class JsCommand extends Object implements ResponseObject
      * @param string $contextId context ID
      * @return JsCommand
      */
-    public function reloadContext($time = 100, $contextId = null) {
+    public function reloadContext($time = 250, $contextId = null) {
         $live = Yii2Live::getSelf();
         if($live->getContextType() === Yii2Live::CONTEXT_TYPE_EXACT || isset($contextId)) {
             $contextId = isset($contextId) ? $contextId : $live->getContextId();
