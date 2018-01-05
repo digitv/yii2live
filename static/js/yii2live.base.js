@@ -14,7 +14,7 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
         linkSelectorAjax: "a[data-live-context], a[data-live-enabled], [data-live-context] a",
         formSelector: "form",
         formSelectorAjax: "form[data-live-context], form[data-live-enabled], [data-live-context] form.gridview-filter-form",
-        fieldSelectorAjax: ".form-control[data-live-context], .form-control[data-live-enabled]",
+        fieldSelectorAjax: ".form-control[data-live-context], .form-control[data-live-enabled], .checkbox input[data-live-enabled]",
         modalDefaultSelector: '#modal-general',
         wrapElementClass: 'yii2live-element-ajax-wrapper',
         messageAdapter: 'alert',
@@ -280,7 +280,7 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
                     rq.ajaxRequest.abort();
                     rq.ajaxRequest = null;
                 }
-                self.loader.deActivate();
+                self.loader.deActivate(true);
             },
             pushState: function (data, title, url, replace) {
                 if(!self.utils.isPushStateSupported()) return;
@@ -335,9 +335,10 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
                 loaderSelf.activateTime = Date.now();
                 self.loader.clearProgressMessages();
             },
-            deActivate: function () {
+            deActivate: function (force) {
+                force = typeof force !== "undefined" ? !!force : false;
                 var elem = self.loader.getElem(), activateMaxTime = Date.now() - 500;
-                if(loaderSelf.activateTime > activateMaxTime) {
+                if(loaderSelf.activateTime > activateMaxTime && !force) {
                     setTimeout(function () {
                         elem.removeClass('active');
                     }, loaderSelf.activateTime - activateMaxTime);
@@ -679,7 +680,10 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
             }
         }).on('submit', formSelector, function (e) {
             e.preventDefault();
-            if($(this).hasClass('gridview-filter-form')) $(this).trigger('beforeSubmit');
+            var form = $(this), data = form.data();
+            if(form.hasClass('gridview-filter-form')
+                || typeof data.liveContext !== "undefined"
+                || (typeof data.liveEnabled !== "undefined" && data.liveEnabled === "1")) $(this).trigger('beforeSubmit');
         });
         //Form field change
         $(document).on('change', self.settings.fieldSelectorAjax, function(e){
