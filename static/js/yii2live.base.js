@@ -14,7 +14,7 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
         linkSelectorAjax: "a[data-live-context], a[data-live-enabled], [data-live-context] a",
         formSelector: "form",
         formSelectorAjax: "form[data-live-context], form[data-live-enabled], [data-live-context] form.gridview-filter-form",
-        fieldSelectorAjax: ".form-control[data-live-context], .form-control[data-live-enabled], .checkbox input[data-live-enabled]",
+        fieldSelectorAjax: ".form-control[data-live-context], .form-control[data-live-enabled], .checkbox input[data-live-enabled], .radio input[data-live-enabled]",
         modalDefaultSelector: '#modal-general',
         wrapElementClass: 'yii2live-element-ajax-wrapper',
         messageAdapter: 'alert',
@@ -680,10 +680,9 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
             }
         }).on('submit', formSelector, function (e) {
             e.preventDefault();
-            var form = $(this), data = form.data();
-            if(form.hasClass('gridview-filter-form')
-                || typeof data.liveContext !== "undefined"
-                || (typeof data.liveEnabled !== "undefined" && data.liveEnabled === "1")) $(this).trigger('beforeSubmit');
+            var form = $(this);
+            if(form.hasClass('gridview-filter-form')) $(this).trigger('beforeSubmit');
+            return false;
         });
         //Form field change
         $(document).on('change', self.settings.fieldSelectorAjax, function(e){
