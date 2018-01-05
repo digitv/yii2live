@@ -249,7 +249,10 @@ class ActiveField extends bootstrapActiveField
      */
     public function radio($options = [], $enclosedByLabel = true)
     {
-        $this->getLiveAttributes(true);
+        $liveAttributes = $this->getLiveAttributes(false);
+        if(!empty($liveAttributes)) {
+            $options = ArrayHelper::merge($options, $liveAttributes);
+        }
         return parent::radio($options, $enclosedByLabel);
     }
 
@@ -258,7 +261,10 @@ class ActiveField extends bootstrapActiveField
      */
     public function checkbox($options = [], $enclosedByLabel = true)
     {
-        $this->getLiveAttributes(true);
+        $liveAttributes = $this->getLiveAttributes(false);
+        if(!empty($liveAttributes)) {
+            $options = ArrayHelper::merge($options, $liveAttributes);
+        }
         return parent::checkbox($options, $enclosedByLabel);
     }
 
@@ -391,6 +397,10 @@ class ActiveField extends bootstrapActiveField
         //Disable Pjax
         if(!empty($this->liveOptions['enabled']) || isset($this->liveOptions['context'])) {
             $attributes['data-pjax'] = 0;
+        }
+        //Copy context from form
+        if(!isset($this->liveOptions['context']) && !empty($this->liveOptions['enabled']) && !empty($this->form->options['data-live-context'])) {
+            $attributes['data-live-context'] = $this->form->options['data-live-context'];
         }
         if($updateInputOptions) {
             $this->inputOptions = ArrayHelper::merge($this->inputOptions, $attributes);
