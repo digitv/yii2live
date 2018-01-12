@@ -3,7 +3,6 @@
 namespace digitv\yii2live\components;
 
 use digitv\yii2live\Yii2Live;
-use yii\base\Object;
 use yii\bootstrap\Html as bsHtml;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Inflector;
@@ -11,7 +10,7 @@ use yii\helpers\Inflector;
 /**
  * Class HtmlChain
  */
-class HtmlChain extends Object
+class HtmlChain extends \yii\base\BaseObject
 {
     const TYPE_LINK         = 'a';
     const TYPE_TAG          = 'tag';

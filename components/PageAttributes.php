@@ -2,14 +2,13 @@
 
 namespace digitv\yii2live\components;
 
-use yii\base\Object;
 use yii\bootstrap\Html;
 
 /**
  * Class PageAttributes
  *
  */
-class PageAttributes extends Object
+class PageAttributes extends \yii\base\BaseObject
 {
     protected static $instance;
 

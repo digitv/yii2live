@@ -4,7 +4,6 @@ namespace digitv\yii2live\components;
 
 use digitv\yii2live\Yii2Live;
 use Yii;
-use yii\base\Object;
 use yii\helpers\Url;
 
 /**
@@ -14,7 +13,7 @@ use yii\helpers\Url;
  * @property array $stack
  * @property array $commands
  */
-class JsCommand extends Object implements ResponseObject
+class JsCommand extends \yii\base\BaseObject implements ResponseObject
 {
     const CMD_TYPE_JQUERY           = 'jQuery';
     const CMD_TYPE_JQUERY_CHAIN     = 'jQueryChain';
