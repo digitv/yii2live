@@ -9,6 +9,7 @@ use digitv\yii2live\components\Request;
 use digitv\yii2live\components\Response;
 use digitv\yii2live\components\View;
 use digitv\yii2live\widgets\BaseLiveWidget;
+use digitv\yii2live\widgets\HtmlInline;
 use digitv\yii2live\yii2sockets\YiiNodeSocketFrameLoader;
 use Yii;
 use yii\base\Application;
@@ -137,17 +138,26 @@ class Yii2Live extends Component implements BootstrapInterface
      */
     public function setWidgetData($widget) {
         $widgetId = $widget instanceof BaseLiveWidget ? $widget->id : $widget->owner->id;
+        /** @var BaseLiveWidget|HtmlInline $widgetBase */
+        $widgetBase = $widget instanceof BaseLiveWidget ? $widget : $widget->owner;
         $data = $widget->getWidgetLiveData();
+        $required = isset($widgetBase->loadOnAnyRequest) && $widgetBase->loadOnAnyRequest;
         /** @var Response $response */
         $response = Yii::$app->response;
+        if($required) {
+            $response->livePageWidgetsRequired[] = $widgetId;
+        }
         if($widget->widgetType === WidgetBehavior::LIVE_WIDGET_TYPE_COMMANDS && !empty($data['data']) && is_array($data['data'])) {
             $response->liveCommands = ArrayHelper::merge($response->liveCommands, $data['data']);
         }
+        $response->livePageWidgets[$widgetId] = $data;
         //Send response immediately for this context
         if($this->getContextType() === static::CONTEXT_TYPE_EXACT && $this->getContextId() === $widgetId) {
-            $response->livePageWidgets = [
-                $widgetId => $data,
-            ];
+            foreach ($response->livePageWidgets as $_widgetId => $_widgetData) {
+                if($_widgetId !== $widgetId && !in_array($_widgetId, $response->livePageWidgetsRequired)) {
+                    unset($response->livePageWidgets[$_widgetId]);
+                }
+            }
             /** @var View $view */
             $view = Yii::$app->view;
             $response->clearOutputBuffers();
@@ -155,8 +165,6 @@ class Yii2Live extends Component implements BootstrapInterface
             $response->data = [];
             $response->send();
             Yii::$app->end();
-        } else {
-            $response->livePageWidgets[$widgetId] = $data;
         }
     }
 

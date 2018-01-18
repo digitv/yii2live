@@ -13,6 +13,8 @@ use yii\helpers\ArrayHelper;
 class Response extends \yii\web\Response
 {
     public $livePageWidgets = [];
+    /** @var array Not removable widgets */
+    public $livePageWidgetsRequired = [];
 
     public $liveCommands = [];
 

@@ -33,6 +33,8 @@ class HtmlInline extends Widget
     public $liveRequestMethod;
     /** @var bool Enable replace animation on AJAX request */
     public $liveReplaceAnimation;
+    /** @var bool Do not remove widget response for Yii2Live::CONTEXT_TYPE_EXACT with different id */
+    public $loadOnAnyRequest = false;
 
     /**
      * @inheritdoc
