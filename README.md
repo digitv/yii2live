@@ -44,16 +44,13 @@ echo \digitv\yii2live\helpers\Html::a('Ajax link', ['action'])
 ```
 All links inside this container will be AJAX enabled. Search form, that will update this container is looks like this:
 ```
-<?php $form = ActiveForm::begin([
+<?php $form = \digitv\yii2live\components\ActiveForm::begin([
     'id' => 'test-search-form',
     'action' => ['index'],
     'method' => 'get',
-    'options' => [
-        'data-live-context' => 'test-wrapper',
-    ],
-]); ?>
+])->context('test-wrapper'); ?>
 ...
-<?php ActiveForm::end(); ?>
+<?php \digitv\yii2live\components\ActiveForm::end(); ?>
 ```
 or this
 ```

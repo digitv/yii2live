@@ -318,6 +318,7 @@ class JsCommand extends \yii\base\BaseObject implements ResponseObject
      */
     public function reloadContext($time = 250, $contextId = null) {
         $live = Yii2Live::getSelf();
+        if(!isset($time)) $time = 250;
         if($live->getContextType() === Yii2Live::CONTEXT_TYPE_EXACT || isset($contextId)) {
             $contextId = isset($contextId) ? $contextId : $live->getContextId();
             $selector = '#' . $contextId;
