@@ -12,6 +12,7 @@ use yii\helpers\Url;
  * @property Response $response
  * @property array $stack
  * @property array $commands
+ * @property array $allCommands
  */
 class JsCommand extends \yii\base\BaseObject implements ResponseObject
 {
@@ -511,6 +512,22 @@ class JsCommand extends \yii\base\BaseObject implements ResponseObject
             $this->chainEnd();
         }
         return $this->stack;
+    }
+
+    /**
+     * Get all commands at the end of request
+     * @return array
+     */
+    public function getAllCommands() {
+        $flashes = Yii::$app->session->getAllFlashes();
+        if(!empty($flashes)) {
+            foreach ($flashes as $flashKey => $flashGroup) {
+                if(is_array($flashGroup) && !empty($flashGroup)) {
+                    foreach ($flashGroup as $messageText) { $this->messageAdd($messageText, $flashKey); }
+                } elseif (is_string($flashGroup)) $this->messageAdd($flashGroup, $flashKey);
+            }
+        }
+        return $this->commands;
     }
 
     /**

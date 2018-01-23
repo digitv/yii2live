@@ -51,7 +51,7 @@ class Response extends \yii\web\Response
                 $jsCmd->jAttr($selector, $attributes);
             }
         }
-        $this->liveCommands = ArrayHelper::merge($this->liveCommands, $jsCmd->commands);
+        $this->liveCommands = ArrayHelper::merge($this->liveCommands, $jsCmd->allCommands);
         $data = [
             '_info' => $this->getPageInfo(),
             'meta' => $this->getPageMeta(),
