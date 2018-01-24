@@ -247,6 +247,22 @@ class Yii2Live extends Component implements BootstrapInterface
     }
 
     /**
+     * Check context type or id
+     * @param string $context
+     * @return bool
+     */
+    public function checkContext($context) {
+        if(!is_string($context)) return false;
+        $contextTypes = [static::CONTEXT_TYPE_PARTIAL, static::CONTEXT_TYPE_PAGE, static::CONTEXT_TYPE_EXACT];
+        //Check for context type
+        if(in_array($context, $contextTypes)) {
+            return $this->getContextType() === $context;
+        }
+        //Check for exact context ID
+        return $this->getContextId() === $context;
+    }
+
+    /**
      * Add commands to response
      * @return JsCommand
      */
@@ -322,5 +338,20 @@ class Yii2Live extends Component implements BootstrapInterface
      */
     public static function getSelf() {
         return static::$self;
+    }
+
+    /**
+     * Get component with some checks
+     * - check "if live request"
+     * - check context type or ID
+     * @return Yii2Live|null
+     */
+    public static function getSelfAndCheck($contextCheck = null) {
+        $self = static::getSelf();
+        //Check for live request
+        if(!$self || !$self->isLiveRequest()) return null;
+        if(!isset($contextCheck)) return $self;
+        //Check for context type or exact context ID
+        return $self->checkContext($contextCheck) ? $self : null;
     }
 }
