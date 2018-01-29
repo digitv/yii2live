@@ -68,7 +68,7 @@ class Yii2LiveAsset extends AssetBundle
         $settingsJson = json_encode($settings);
         $jsSettings = new JsExpression("
         if(typeof yii2live === 'undefined') yii2live = new Yii2Live(" . $settingsJson . ");
-        else yii2live.settings.merge(" . $settingsJson . ");
+        else yii2live.settingsUtils.merge(" . $settingsJson . ");
         ");
         /** @var $view View|\yii\web\View */
         parent::registerAssetFiles($view);
