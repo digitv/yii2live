@@ -166,6 +166,9 @@
     transition: none;
 }
 
+.yii2-live-notify {
+    z-index: 10003 !important;
+}
 .yii2-live-notify .progress {
     margin-bottom: 0;
     position: absolute;
