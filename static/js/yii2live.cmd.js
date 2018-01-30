@@ -59,6 +59,8 @@ yii2liveCmd = function (self) {
             if(!element.length || typeof jQuery.fn.modal !== "function") return [];
             if(method === "body") {
                 if(!element.is(':visible')) element.modal('show');
+                //trigger yii2live EVENT_HTML_INSERT
+                setTimeout(function () { element.find('.modal-body').trigger(yii2live.events.EVENT_HTML_INSERT); }, 100);
                 return jQuery.fn.html.apply(element.find('.modal-body'), args);
             } else if(method === "title") {
                 if(!element.is(':visible')) element.modal('show');

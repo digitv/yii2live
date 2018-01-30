@@ -718,6 +718,7 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
             pageWidgets: this.pageWidgets,
             pageMeta: this.pageMeta,
             ajaxCmd: this.ajaxCmd,
+            events: $.extend({}, this.events)
         };
     }
 
