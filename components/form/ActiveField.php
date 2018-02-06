@@ -46,12 +46,15 @@ class ActiveField extends bootstrapActiveField
             if(is_array($firstItem) && isset($firstItem['text']) && isset($firstItem['id'])) {
                 $simpleItems = ArrayHelper::map($items, 'id','text');
                 $defaultOptions['data'] = $simpleItems;
+                foreach ($items as $itemKey => $item) {
+                    $items[$itemKey]['str'] = $item['text'];
+                }
                 $defaultOptions['pluginOptions']['data'] = $items;
                 $defaultOptions['pluginOptions']['escapeMarkup'] = new JsExpression('function (markup) { return markup; }');
-                $defaultOptions['pluginOptions']['templateResult'] = new JsExpression("function(row){ return row.text; }");
-                $defaultOptions['pluginOptions']['templateSelection'] = new JsExpression("function(row){ return row.text; }");
+                $defaultOptions['pluginOptions']['templateResult'] = new JsExpression("function(row){ return row.str; }");
+                $defaultOptions['pluginOptions']['templateSelection'] = new JsExpression("function(row){ return row.str; }");
                 if(isset($firstItem['icon'])) {
-                    $defaultOptions['pluginOptions']['templateResult'] = new JsExpression("function(row){ return '<div class=\"select2-icon-row\"><span class=\"row-icon\">'+row.icon+'</span><span class=\"row-text\"> '+row.text+'</span></div>' }");
+                    $defaultOptions['pluginOptions']['templateResult'] = new JsExpression("function(row){ return $('<div class=\"select2-icon-row\"><span class=\"row-icon\">'+row.icon+'</span><span class=\"row-text\"> '+row.str+'</span></div>'); }");
                 }
             }
         }
