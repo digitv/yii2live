@@ -240,11 +240,12 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
                 var field = $(this), form = field.parents('form:first'),
                     method = form.attr('method') || 'post',
                     url = form.attr('action') || window.location.href,
+                    elementMethod = plugin.utils.getElementOption(field, 'method', method),
                     data, formData;
-                if(method.toLowerCase() === 'post') {
+                if(elementMethod.toLowerCase() === 'post') {
                     plugin.utils.formLocationDataAdd(form);
                 }
-                formData = method.toLowerCase() === "post" ? new FormData(form[0]) : form.serialize();
+                formData = elementMethod.toLowerCase() === "post" ? new FormData(form[0]) : form.serialize();
                 plugin.utils.formLocationDataRemove(form);
                 data = {
                     data: formData
@@ -669,7 +670,7 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
             linkSelectorAjax: "a[data-live-context], a[data-live-enabled], [data-live-context] a",
             formSelector: "form",
             formSelectorAjax: "form[data-live-context], form[data-live-enabled], [data-live-context] form.gridview-filter-form",
-            fieldSelectorAjax: ".form-control[data-live-context], .form-control[data-live-enabled], .checkbox input[data-live-enabled], .radio input[data-live-enabled]",
+            fieldSelectorAjax: ".form-control[data-live-context], .form-control[data-live-enabled], .checkbox input[data-live-enabled], .radio input[data-live-enabled], .btn input[data-live-enabled]",
             modalDefaultSelector: '#modal-general',
             wrapElementClass: 'yii2live-element-ajax-wrapper',
             messageAdapter: 'alert',

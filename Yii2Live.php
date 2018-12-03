@@ -349,8 +349,12 @@ class Yii2Live extends Component implements BootstrapInterface
     public static function getSelfAndCheck($contextCheck = null) {
         $self = static::getSelf();
         //Check for live request
-        if(!$self || !$self->isLiveRequest()) return null;
-        if(!isset($contextCheck)) return $self;
+        if(!$self || !$self->isLiveRequest()) {
+            return null;
+        }
+        if(!isset($contextCheck)) {
+            return $self;
+        }
         //Check for context type or exact context ID
         return $self->checkContext($contextCheck) ? $self : null;
     }

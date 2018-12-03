@@ -60,7 +60,7 @@ class ActiveField extends bootstrapActiveField
         }
         $options = ArrayHelper::merge($defaultOptions, $options);
         Html::addCssClass($options['options'], 'compact-form-select2');
-        return $this->widget(\kartik\widgets\Select2::className(), $options);
+        return $this->widget(\kartik\widgets\Select2::class, $options);
     }
 
     /**
@@ -95,7 +95,7 @@ class ActiveField extends bootstrapActiveField
             ];
         }
         $options = ArrayHelper::merge($defaultOptions, $options);
-        return $this->widget(\kartik\widgets\DepDrop::className(), $options);
+        return $this->widget(\kartik\widgets\DepDrop::class, $options);
     }
 
     /**
@@ -104,7 +104,7 @@ class ActiveField extends bootstrapActiveField
      * @return $this
      */
     public function typeAhead($options = []) {
-        return $this->widget(\kartik\widgets\Typeahead::className(), $options);
+        return $this->widget(\kartik\widgets\Typeahead::class, $options);
     }
 
 
@@ -126,7 +126,7 @@ class ActiveField extends bootstrapActiveField
             $defaultOptions['pluginOptions']['format'] = $format;
         }
         $options = ArrayHelper::merge($defaultOptions, $options);
-        return $this->widget(\kartik\widgets\DatePicker::className(), $options);
+        return $this->widget(\kartik\widgets\DatePicker::class, $options);
     }
 
     /**
@@ -147,7 +147,7 @@ class ActiveField extends bootstrapActiveField
             $defaultOptions['pluginOptions']['format'] = $format;
         }
         $options = ArrayHelper::merge($defaultOptions, $options);
-        return $this->widget(\kartik\widgets\DateTimePicker::className(), $options);
+        return $this->widget(\kartik\widgets\DateTimePicker::class, $options);
     }
 
     /**
@@ -178,7 +178,7 @@ class ActiveField extends bootstrapActiveField
             ]
         ];
         $options = ArrayHelper::merge($defaultOptions, $options);
-        return $this->widget(\kartik\daterange\DateRangePicker::className(), $options);
+        return $this->widget(\kartik\daterange\DateRangePicker::class, $options);
     }
 
     /**
@@ -192,11 +192,14 @@ class ActiveField extends bootstrapActiveField
         $options = ArrayHelper::merge($options, [
             'type' => 'checkbox',
             'items' => $items,
+            'options' => [
+                'itemOptions' => $this->getLiveAttributes(),
+            ],
             'labelOptions' => [
                 'class' => $btnClass,
             ],
         ]);
-        $widgetClass = ArrayHelper::remove($options, 'class', \yii\bootstrap\ToggleButtonGroup::className());
+        $widgetClass = ArrayHelper::remove($options, 'class', \yii\bootstrap\ToggleButtonGroup::class);
         return $this->widget($widgetClass, $options);
     }
 
@@ -211,12 +214,15 @@ class ActiveField extends bootstrapActiveField
         $options = ArrayHelper::merge($options, [
             'type' => 'radio',
             'items' => $items,
+            'options' => [
+                'itemOptions' => $this->getLiveAttributes(),
+            ],
             'labelOptions' => [
                 'class' => $btnClass,
             ],
         ]);
         $options['emptyOptionAsNone'] = true;
-        $widgetClass = ArrayHelper::remove($options, 'class', \yii\bootstrap\ToggleButtonGroup::className());
+        $widgetClass = ArrayHelper::remove($options, 'class', \yii\bootstrap\ToggleButtonGroup::class);
         return $this->widget($widgetClass, $options);
     }
 
@@ -311,7 +317,7 @@ class ActiveField extends bootstrapActiveField
      * the following code, assuming that `$form` is your [[ActiveForm]] instance:
      *
      * ```php
-     * $form->field($model, 'date')->widget(\yii\widgets\MaskedInput::className(), [
+     * $form->field($model, 'date')->widget(\yii\widgets\MaskedInput::class, [
      *     'mask' => '99/99/9999',
      * ]);
      * ```
