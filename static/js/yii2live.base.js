@@ -241,6 +241,7 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
                     method = form.attr('method') || 'post',
                     url = form.attr('action') || window.location.href,
                     elementMethod = plugin.utils.getElementOption(field, 'method', method),
+                    elementUrl = plugin.utils.getElementOption(field, 'url', url),
                     data, formData;
                 if(elementMethod.toLowerCase() === 'post') {
                     plugin.utils.formLocationDataAdd(form);
@@ -250,7 +251,7 @@ if (!Date.now) { Date.now = function() { return new Date().getTime(); } }
                 data = {
                     data: formData
                 };
-                plugin.request.ajax(url, data, field);
+                plugin.request.ajax(elementUrl, data, field);
             },
             popStateChange: function (e) {
                 if(typeof e.state === "undefined" || e.state === null) {

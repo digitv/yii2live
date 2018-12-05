@@ -8,6 +8,7 @@ use Yii;
 use yii\bootstrap\ActiveField as bootstrapActiveField;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Inflector;
+use yii\helpers\Url;
 use yii\web\JsExpression;
 
 /**
@@ -345,10 +346,18 @@ class ActiveField extends bootstrapActiveField
 
     /**
      * Set live AJAX enable flag
-     * @param bool $enable
+     * @param bool|string|array $enable
      * @return ActiveField
      */
     public function ajax($enable = true) {
+        $url = null;
+        if (is_array($enable)) {
+            $url = Url::to($enable);
+        }
+        if ($url !== null) {
+            $enable = true;
+            $this->liveOptions['url'] = $url;
+        }
         $this->liveOptions['enabled'] = $enable;
         return $this;
     }
@@ -395,10 +404,12 @@ class ActiveField extends bootstrapActiveField
      */
     protected function getLiveAttributes($updateInputOptions = false) {
         $attributes = [];
-        $rawAttributes = ['enabled', 'context', 'pushState', 'method'];
+        $rawAttributes = ['enabled', 'context', 'pushState', 'method', 'url'];
         //Write raw attributes values
         foreach ($rawAttributes as $key) {
-            if(!isset($this->liveOptions[$key])) continue;
+            if(!isset($this->liveOptions[$key])) {
+                continue;
+            }
             $attributeName = 'data-live-' . Inflector::camel2id($key);
             $attributeValue = is_bool($this->liveOptions[$key]) ? (int)$this->liveOptions[$key] : $this->liveOptions[$key];
             $attributes[$attributeName] = $attributeValue;
