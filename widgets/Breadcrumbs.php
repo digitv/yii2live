@@ -24,7 +24,7 @@ class Breadcrumbs extends \yii\widgets\Breadcrumbs
     {
         return [
             [
-                'class' => WidgetBehavior::className(),
+                'class' => WidgetBehavior::class,
                 'widgetType' => WidgetBehavior::LIVE_WIDGET_TYPE_COMMANDS,
             ],
         ];
