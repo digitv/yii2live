@@ -2,14 +2,14 @@
 
 namespace digitv\yii2live\components\form;
 
-use digitv\yii2live\helpers\Html;
-use digitv\yii2live\Yii2Live;
 use Yii;
-use yii\bootstrap\ActiveField as bootstrapActiveField;
-use yii\helpers\ArrayHelper;
-use yii\helpers\Inflector;
 use yii\helpers\Url;
 use yii\web\JsExpression;
+use yii\helpers\Inflector;
+use yii\helpers\ArrayHelper;
+use digitv\yii2live\Yii2Live;
+use digitv\yii2live\helpers\Html;
+use yii\bootstrap\ActiveField as bootstrapActiveField;
 
 /**
  * Class ActiveField
@@ -22,11 +22,13 @@ class ActiveField extends bootstrapActiveField
 
     /**
      * kartik Select2 widget
-     * @param array $items
-     * @param array $options
+     *
+     * @param  array $items
+     * @param  array $options
      * @return $this
      */
-    public function select2($items = [], $options = []) {
+    public function select2($items = [], $options = [])
+    {
         $defaultOptions = [
             'data' => $items,
             'theme' => \kartik\widgets\Select2::THEME_BOOTSTRAP,
@@ -34,7 +36,7 @@ class ActiveField extends bootstrapActiveField
                 'placeholder' => Yii::t('back', 'Please select...'),
             ],
             'pluginOptions' => [
-                'allowClear' => empty($options['options']['multiple']) ? true : false,
+                'allowClear' => empty($options['options']['multiple']),
             ],
             'toggleAllSettings' => [
                 'selectLabel' => '<i class="fa fa-check-square-o"></i> ' . Yii::t('back', 'Select all'),
@@ -42,10 +44,10 @@ class ActiveField extends bootstrapActiveField
             ],
         ];
         //Check for formatted array data for future use
-        if(!empty($items)) {
+        if (! empty($items)) {
             $firstItem = reset($items);
-            if(is_array($firstItem) && isset($firstItem['text']) && isset($firstItem['id'])) {
-                $simpleItems = ArrayHelper::map($items, 'id','text');
+            if (is_array($firstItem) && isset($firstItem['text'], $firstItem['id'])) {
+                $simpleItems = ArrayHelper::map($items, 'id', 'text');
                 $defaultOptions['data'] = $simpleItems;
                 foreach ($items as $itemKey => $item) {
                     $items[$itemKey]['str'] = $item['text'];
@@ -54,34 +56,37 @@ class ActiveField extends bootstrapActiveField
                 $defaultOptions['pluginOptions']['escapeMarkup'] = new JsExpression('function (markup) { return markup; }');
                 $defaultOptions['pluginOptions']['templateResult'] = new JsExpression("function(row){ return row.str; }");
                 $defaultOptions['pluginOptions']['templateSelection'] = new JsExpression("function(row){ return row.str; }");
-                if(isset($firstItem['icon'])) {
+                if (isset($firstItem['icon'])) {
                     $defaultOptions['pluginOptions']['templateResult'] = new JsExpression("function(row){ return $('<div class=\"select2-icon-row\"><span class=\"row-icon\">'+row.icon+'</span><span class=\"row-text\"> '+row.str+'</span></div>'); }");
                 }
             }
         }
         $options = ArrayHelper::merge($defaultOptions, $options);
         Html::addCssClass($options['options'], 'compact-form-select2');
+
         return $this->widget(\kartik\widgets\Select2::class, $options);
     }
 
     /**
      * Dependent dropdown
-     * @param array $options
-     * @param bool  $multiple
-     * @param bool  $typeSelect2
+     *
+     * @param  array $options
+     * @param  bool  $multiple
+     * @param  bool  $typeSelect2
      * @return $this
      */
-    public function dependentDropDown($options = [], $multiple = false, $typeSelect2 = false) {
+    public function dependentDropDown($options = [], $multiple = false, $typeSelect2 = false)
+    {
         $defaultOptions = [
             'options' => [
                 'placeholder' => Yii::t('back', 'Please select...'),
-                'multiple' => !empty($multiple)
+                'multiple' => ! empty($multiple),
             ],
             'pluginOptions' => [
                 'placeholder' => Yii::t('back', 'Please select...'),
             ],
         ];
-        if($typeSelect2) {
+        if ($typeSelect2) {
             $defaultOptions['type'] = \kartik\widgets\DepDrop::TYPE_SELECT2;
             $defaultOptions['select2Options'] = [
                 'language' => Yii::$app->language,
@@ -96,26 +101,31 @@ class ActiveField extends bootstrapActiveField
             ];
         }
         $options = ArrayHelper::merge($defaultOptions, $options);
+
         return $this->widget(\kartik\widgets\DepDrop::class, $options);
     }
 
     /**
      * kartik TypeAhead widget
-     * @param array $options
+     *
+     * @param  array $options
      * @return $this
      */
-    public function typeAhead($options = []) {
+    public function typeAhead($options = [])
+    {
         return $this->widget(\kartik\widgets\Typeahead::class, $options);
     }
 
 
     /**
      * DatePicker krajee
-     * @param array $options
-     * @param string  $format
+     *
+     * @param  array  $options
+     * @param  string $format
      * @return $this
      */
-    public function datePicker($options = [], $format = null) {
+    public function datePicker($options = [], $format = null)
+    {
         $defaultOptions = [
             'convertFormat' => true,
             'pluginOptions' => [
@@ -123,20 +133,23 @@ class ActiveField extends bootstrapActiveField
                 'format' => 'php:Y-m-d',
             ],
         ];
-        if(isset($format)) {
+        if (isset($format)) {
             $defaultOptions['pluginOptions']['format'] = $format;
         }
         $options = ArrayHelper::merge($defaultOptions, $options);
+
         return $this->widget(\kartik\widgets\DatePicker::class, $options);
     }
 
     /**
      * DateTimePicker krajee
-     * @param array $options
-     * @param string  $format
+     *
+     * @param  array       $options
+     * @param  string|null $format
      * @return $this
      */
-    public function dateTimePicker($options = [], $format = null) {
+    public function dateTimePicker($options = [], $format = null)
+    {
         $defaultOptions = [
             'convertFormat' => true,
             'pluginOptions' => [
@@ -144,19 +157,22 @@ class ActiveField extends bootstrapActiveField
                 'format' => 'php:Y-m-d H:i',
             ],
         ];
-        if(isset($format)) {
+        if (isset($format)) {
             $defaultOptions['pluginOptions']['format'] = $format;
         }
         $options = ArrayHelper::merge($defaultOptions, $options);
+
         return $this->widget(\kartik\widgets\DateTimePicker::class, $options);
     }
 
     /**
      * DateRangePicker krajee
-     * @param array $options
+     *
+     * @param  array $options
      * @return $this
      */
-    public function dateRangePicker($options = []) {
+    public function dateRangePicker($options = [])
+    {
         $defaultOptions = [
             'presetDropdown' => true,
             'convertFormat' => true,
@@ -175,21 +191,24 @@ class ActiveField extends bootstrapActiveField
                         $(picker.element).siblings('input').val('').change();
                         $(picker.element).find('.range-value').html('');
                         picker.updateView();
-                    }"
-            ]
+                    }",
+            ],
         ];
         $options = ArrayHelper::merge($defaultOptions, $options);
+
         return $this->widget(\kartik\daterange\DateRangePicker::class, $options);
     }
 
     /**
      * Renders ToggleButtonGroup as checkboxes
-     * @param array   $items
-     * @param string  $btnClass
-     * @param array   $options
+     *
+     * @param  array  $items
+     * @param  string $btnClass
+     * @param  array  $options
      * @return $this the field object itself
      */
-    public function checkboxButtonGroup($items, $btnClass = 'btn-default', $options = []) {
+    public function checkboxButtonGroup($items, $btnClass = 'btn-default', $options = [])
+    {
         $options = ArrayHelper::merge($options, [
             'type' => 'checkbox',
             'items' => $items,
@@ -201,17 +220,20 @@ class ActiveField extends bootstrapActiveField
             ],
         ]);
         $widgetClass = ArrayHelper::remove($options, 'class', \yii\bootstrap\ToggleButtonGroup::class);
+
         return $this->widget($widgetClass, $options);
     }
 
     /**
      * Renders ToggleButtonGroup as radios
-     * @param array   $items
-     * @param string  $btnClass
-     * @param array   $options
+     *
+     * @param  array  $items
+     * @param  string $btnClass
+     * @param  array  $options
      * @return $this the field object itself
      */
-    public function radioButtonGroup($items, $btnClass = 'btn-default', $options = []) {
+    public function radioButtonGroup($items, $btnClass = 'btn-default', $options = [])
+    {
         $options = ArrayHelper::merge($options, [
             'type' => 'radio',
             'items' => $items,
@@ -224,6 +246,7 @@ class ActiveField extends bootstrapActiveField
         ]);
         $options['emptyOptionAsNone'] = true;
         $widgetClass = ArrayHelper::remove($options, 'class', \yii\bootstrap\ToggleButtonGroup::class);
+
         return $this->widget($widgetClass, $options);
     }
 
@@ -233,6 +256,7 @@ class ActiveField extends bootstrapActiveField
     public function input($type, $options = [])
     {
         $this->getLiveAttributes(true);
+
         return parent::input($type, $options);
     }
 
@@ -242,6 +266,7 @@ class ActiveField extends bootstrapActiveField
     public function textInput($options = [])
     {
         $this->getLiveAttributes(true);
+
         return parent::textInput($options);
     }
 
@@ -251,6 +276,7 @@ class ActiveField extends bootstrapActiveField
     public function textarea($options = [])
     {
         $this->getLiveAttributes(true);
+
         return parent::textarea($options);
     }
 
@@ -260,9 +286,10 @@ class ActiveField extends bootstrapActiveField
     public function radio($options = [], $enclosedByLabel = true)
     {
         $liveAttributes = $this->getLiveAttributes(false);
-        if(!empty($liveAttributes)) {
+        if (! empty($liveAttributes)) {
             $options = ArrayHelper::merge($options, $liveAttributes);
         }
+
         return parent::radio($options, $enclosedByLabel);
     }
 
@@ -272,9 +299,10 @@ class ActiveField extends bootstrapActiveField
     public function checkbox($options = [], $enclosedByLabel = true)
     {
         $liveAttributes = $this->getLiveAttributes(false);
-        if(!empty($liveAttributes)) {
+        if (! empty($liveAttributes)) {
             $options = ArrayHelper::merge($options, $liveAttributes);
         }
+
         return parent::checkbox($options, $enclosedByLabel);
     }
 
@@ -284,6 +312,7 @@ class ActiveField extends bootstrapActiveField
     public function dropDownList($items, $options = [])
     {
         $this->getLiveAttributes(true);
+
         return parent::dropDownList($items, $options);
     }
 
@@ -293,6 +322,7 @@ class ActiveField extends bootstrapActiveField
     public function checkboxList($items, $options = [])
     {
         $this->getLiveAttributes(true);
+
         return parent::checkboxList($items, $options);
     }
 
@@ -302,6 +332,7 @@ class ActiveField extends bootstrapActiveField
     public function radioList($items, $options = [])
     {
         $this->getLiveAttributes(true);
+
         return parent::radioList($items, $options);
     }
 
@@ -325,8 +356,8 @@ class ActiveField extends bootstrapActiveField
      *
      * If you set a custom `id` for the input element, you may need to adjust the [[$selectors]] accordingly.
      *
-     * @param string $class the widget class name.
-     * @param array $config name-value pairs that will be used to initialize the widget.
+     * @param  string $class  the widget class name.
+     * @param  array  $config name-value pairs that will be used to initialize the widget.
      * @return $this the field object itself.
      */
     public function widget($class, $config = [])
@@ -343,13 +374,14 @@ class ActiveField extends bootstrapActiveField
     }
 
 
-
     /**
      * Set live AJAX enable flag
-     * @param bool|string|array $enable
+     *
+     * @param  bool|string|array $enable
      * @return ActiveField
      */
-    public function ajax($enable = true) {
+    public function ajax($enable = true)
+    {
         $url = null;
         if (is_array($enable)) {
             $url = Url::to($enable);
@@ -359,55 +391,69 @@ class ActiveField extends bootstrapActiveField
             $this->liveOptions['url'] = $url;
         }
         $this->liveOptions['enabled'] = $enable;
+
         return $this;
     }
 
     /**
      * Set live context
+     *
      * @param $contextValue
      * @return ActiveField
      */
-    public function context($contextValue) {
-        if(!isset($contextValue)) return $this;
+    public function context($contextValue)
+    {
+        if (! isset($contextValue)) {
+            return $this;
+        }
         $this->liveOptions['context'] = $contextValue;
-        if($contextValue !== Yii2Live::CONTEXT_TYPE_PAGE) {
+        if ($contextValue !== Yii2Live::CONTEXT_TYPE_PAGE) {
             $this->pushState(false);
         }
+
         return $this;
     }
 
     /**
      * Set request method
-     * @param string $method
+     *
+     * @param  string $method
      * @return ActiveField
      */
-    public function requestMethod($method = 'get') {
+    public function requestMethod($method = 'get')
+    {
         $this->liveOptions['method'] = strtolower($method);
+
         return $this;
     }
 
     /**
      * Set pushState enable flag
-     * @param bool $enabled
+     *
+     * @param  bool $enabled
      * @return ActiveField
      */
-    public function pushState($enabled = true) {
-        $enabled = isset($enabled) ? !empty($enabled) : true;
+    public function pushState($enabled = true)
+    {
+        $enabled = isset($enabled) ? ! empty($enabled) : true;
         $this->liveOptions['pushState'] = $enabled;
+
         return $this;
     }
 
     /**
      * Get liveOptions as attributes array
-     * @param bool $updateInputOptions
+     *
+     * @param  bool $updateInputOptions
      * @return array
      */
-    protected function getLiveAttributes($updateInputOptions = false) {
+    protected function getLiveAttributes($updateInputOptions = false)
+    {
         $attributes = [];
         $rawAttributes = ['enabled', 'context', 'pushState', 'method', 'url'];
         //Write raw attributes values
         foreach ($rawAttributes as $key) {
-            if(!isset($this->liveOptions[$key])) {
+            if (! isset($this->liveOptions[$key])) {
                 continue;
             }
             $attributeName = 'data-live-' . Inflector::camel2id($key);
@@ -415,14 +461,14 @@ class ActiveField extends bootstrapActiveField
             $attributes[$attributeName] = $attributeValue;
         }
         //Disable Pjax
-        if(!empty($this->liveOptions['enabled']) || isset($this->liveOptions['context'])) {
+        if (! empty($this->liveOptions['enabled']) || isset($this->liveOptions['context'])) {
             $attributes['data-pjax'] = 0;
         }
         //Copy context from form
-        if(!isset($this->liveOptions['context']) && !empty($this->liveOptions['enabled']) && !empty($this->form->options['data-live-context'])) {
+        if (! isset($this->liveOptions['context']) && ! empty($this->liveOptions['enabled']) && ! empty($this->form->options['data-live-context'])) {
             $attributes['data-live-context'] = $this->form->options['data-live-context'];
         }
-        if($updateInputOptions) {
+        if ($updateInputOptions) {
             $this->inputOptions = ArrayHelper::merge($this->inputOptions, $attributes);
         }
 

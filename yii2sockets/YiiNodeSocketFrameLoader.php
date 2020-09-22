@@ -7,15 +7,16 @@ use digitv\yii2sockets\YiiNodeSocketFrameBasic;
 
 /**
  * Class YiiNodeSocketFrameLoader
+ *
  * @package digitv\yii2live\yii2sockets
  *
  * @property string $type
  */
 class YiiNodeSocketFrameLoader extends YiiNodeSocketFrameBasic
 {
-    const TYPE_ADD_MESSAGE      = 'addMessage';
-    const TYPE_FINISH_MESSAGE   = 'finishMessage';
-    const TYPE_FLUSH_MESSAGES   = 'flushMessages';
+    const TYPE_ADD_MESSAGE = 'addMessage';
+    const TYPE_FINISH_MESSAGE = 'finishMessage';
+    const TYPE_FLUSH_MESSAGES = 'flushMessages';
 
     public $progressMessageIconClass = 'fa fa-check';
 
@@ -28,73 +29,94 @@ class YiiNodeSocketFrameLoader extends YiiNodeSocketFrameBasic
 
     /**
      * Add loader progress message
-     * @param string $message
-     * @param string $key
-     * @param bool   $finished
+     *
+     * @param  string|null $message
+     * @param  string|null $key
+     * @param  bool        $finished
      * @return static
      */
-    public function addProgressMessage($message = null, $key = null, $finished = false) {
-        if(!isset($message) || !is_string($message) || trim($message) === "") return $this;
-        if(!isset($key) || !is_string($key) || trim($key) === "") $key = 'progress-message-' . ceil(microtime(true) * 1000);
+    public function addProgressMessage($message = null, $key = null, $finished = false)
+    {
+        if (! isset($message) || ! is_string($message) || trim($message) === "") {
+            return $this;
+        }
+        if (! isset($key) || ! is_string($key) || trim($key) === "") {
+            $key = 'progress-message-' . ceil(microtime(true) * 1000);
+        }
         $this->_progressMessage = $message;
         $this->_progressMessageKey = $key;
         $this->_progressMessageFinished = $finished ? 1 : 0;
         $this->type = static::TYPE_ADD_MESSAGE;
+
         return $this;
     }
 
     /**
      * Mark progress message as finished
-     * @param string $key
+     *
+     * @param  string $key
      * @return YiiNodeSocketFrameLoader
      */
-    public function finishProgressMessage($key) {
+    public function finishProgressMessage($key)
+    {
         $this->_progressMessageKey = $key;
         $this->type = static::TYPE_FINISH_MESSAGE;
+
         return $this;
     }
 
     /**
      * Flush all messages
+     *
      * @return YiiNodeSocketFrameLoader
      */
-    public function flushMessages() {
+    public function flushMessages()
+    {
         $this->type = static::TYPE_FLUSH_MESSAGES;
+
         return $this;
     }
 
     /**
      * Set frame subtype
-     * @param string $type
+     *
+     * @param  string $type
      * @return YiiNodeSocketFrameLoader
      */
-    public function setType($type = self::TYPE_ADD_MESSAGE) {
+    public function setType($type = self::TYPE_ADD_MESSAGE)
+    {
         $this->_type = $type;
+
         return $this;
     }
 
     /**
      * Get frame subtype
+     *
      * @return string
      */
-    public function getType() {
+    public function getType()
+    {
         return $this->_type;
     }
 
     /**
      * Validate input
+     *
      * @return bool
      */
     public function validate()
     {
         $this->composeOptions();
+
         return parent::validate();
     }
 
     /**
      * Compose frame options
      */
-    public function composeOptions() {
+    public function composeOptions()
+    {
         $body = [
             'type' => $this->_type,
         ];
@@ -114,6 +136,7 @@ class YiiNodeSocketFrameLoader extends YiiNodeSocketFrameBasic
                 return $this;
         }
         $this->setBody($body);
+
         return $this;
     }
 }

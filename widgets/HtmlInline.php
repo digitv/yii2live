@@ -43,7 +43,7 @@ class HtmlInline extends Widget
     {
         return [
             [
-                'class' => WidgetBehavior::className(),
+                'class' => WidgetBehavior::class,
             ],
         ];
     }

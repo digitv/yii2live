@@ -2,9 +2,9 @@
 
 namespace digitv\yii2live\widgets;
 
-use digitv\yii2live\behaviors\WidgetBehavior;
-use digitv\yii2live\Yii2Live;
 use Yii;
+use digitv\yii2live\Yii2Live;
+use digitv\yii2live\behaviors\WidgetBehavior;
 
 /**
  * Class Breadcrumbs
@@ -32,7 +32,9 @@ class Breadcrumbs extends \yii\widgets\Breadcrumbs
 
     public function init()
     {
-        if(!isset($this->title)) $this->title = Yii::t('yii2live', 'Breadcrumbs');
+        if (! isset($this->title)) {
+            $this->title = Yii::t('yii2live', 'Breadcrumbs');
+        }
         parent::init();
         $this->id = $this->options['id'];
     }
@@ -43,29 +45,35 @@ class Breadcrumbs extends \yii\widgets\Breadcrumbs
     public function run()
     {
         $live = Yii2Live::getSelf();
-        if($live) {
+        if ($live) {
             $stateCheck = $this->computeLiveState();
-            if($live->isLiveRequest()) {
-                if($stateCheck === true) return null;
+            if ($live->isLiveRequest()) {
+                if ($stateCheck === true) {
+                    return null;
+                }
                 $this->widgetType = WidgetBehavior::LIVE_WIDGET_TYPE_HTML;
             }
         }
         ob_start();
         ob_implicit_flush(false);
         parent::run();
-        $content = ob_get_clean();
-        return $content;
+
+        return ob_get_clean();
     }
 
     /**
      * Compute widget state (changed or not)
+     *
      * @return bool
      */
     protected function computeLiveState()
     {
         $items = $this->links;
         $stateCheck = $this->checkWidgetState($items, true, true);
-        if(is_bool($stateCheck)) return $stateCheck;
+        if (is_bool($stateCheck)) {
+            return $stateCheck;
+        }
+
         return false;
     }
 }

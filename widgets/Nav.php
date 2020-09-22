@@ -2,11 +2,11 @@
 
 namespace digitv\yii2live\widgets;
 
-use digitv\yii2live\behaviors\WidgetBehavior;
+use yii\helpers\Url;
+use yii\helpers\ArrayHelper;
 use digitv\yii2live\Yii2Live;
 use yii\bootstrap\BootstrapAsset;
-use yii\helpers\ArrayHelper;
-use yii\helpers\Url;
+use digitv\yii2live\behaviors\WidgetBehavior;
 
 /**
  * Class Nav
@@ -23,7 +23,7 @@ class Nav extends \yii\bootstrap\Nav
     {
         return [
             [
-                'class' => WidgetBehavior::className(),
+                'class' => WidgetBehavior::class,
                 'widgetType' => WidgetBehavior::LIVE_WIDGET_TYPE_COMMANDS,
             ],
         ];
@@ -36,27 +36,33 @@ class Nav extends \yii\bootstrap\Nav
     {
         BootstrapAsset::register($this->getView());
         $live = Yii2Live::getSelf();
-        if($live) {
+        if ($live) {
             $stateCheck = $this->computeLiveState();
-            if($live->isLiveRequest()) {
-                if($stateCheck === true) return null;
+            if ($live->isLiveRequest()) {
+                if ($stateCheck === true) {
+                    return null;
+                }
                 $this->widgetType = WidgetBehavior::LIVE_WIDGET_TYPE_HTML;
             }
         }
+
         return $this->renderItems();
     }
 
     /**
      * Compute widget state (changed or not)
+     *
      * @return bool
      */
-    protected function computeLiveState() {
+    protected function computeLiveState()
+    {
         $activeUrls = $this->getActiveUrls($this->items);
         $items = [];
         foreach ($this->items as $item) {
-            if(is_string($item)) $items[] = $item;
-            elseif(isset($item['label']) && isset($item['url'])) {
-                $items[] = $item['label'] . ":" .  Url::to($item['url']);
+            if (is_string($item)) {
+                $items[] = $item;
+            } elseif (isset($item['label'], $item['url'])) {
+                $items[] = $item['label'] . ":" . Url::to($item['url']);
             }
         }
         $data = [
@@ -65,51 +71,68 @@ class Nav extends \yii\bootstrap\Nav
         ];
         $live = Yii2Live::getSelf();
         $stateCheck = $this->checkWidgetState($data, true, false);
-        if(is_bool($stateCheck)) return $stateCheck;
-        if(is_array($stateCheck)) {
-            if(in_array('items', $stateCheck)) return false;
-            if(in_array('activeUrls', $stateCheck)) {
+        if (is_bool($stateCheck)) {
+            return $stateCheck;
+        }
+        if (is_array($stateCheck)) {
+            if (in_array('items', $stateCheck, true)) {
+                return false;
+            }
+            if (in_array('activeUrls', $stateCheck, true)) {
                 $menuSelector = '#' . $this->id;
                 $cmd = $live->commands();
                 $cmd->jRemoveClass($menuSelector . ' li', 'active');
                 foreach ($activeUrls as $url) {
                     $cmd->chainBegin()
-                        ->jParent($menuSelector . ' a[href="'.$url.'"]')
+                        ->jParent($menuSelector . ' a[href="' . $url . '"]')
                         ->jAddClass(null, 'active')
                         ->chainEnd();
                 }
             }
+
             return true;
         }
+
         return true;
     }
 
     /**
      * Get active items URLs
-     * @param array $items
+     *
+     * @param  array $items
      * @return array
      */
-    public function getActiveUrls($items = []) {
+    public function getActiveUrls($items = [])
+    {
         $urls = [];
         foreach ($items as $item) {
-            if(!is_array($item)) continue;
+            if (! is_array($item)) {
+                continue;
+            }
             $active = $this->isItemActiveFully($item);
-            if($active) $urls[] = Url::to($item['url']);
-            if(!empty($item['items'])) {
+            if ($active) {
+                $urls[] = Url::to($item['url']);
+            }
+            if (! empty($item['items'])) {
                 $urls = ArrayHelper::merge($urls, $this->getActiveUrls($item['items']));
             }
         }
+
         return $urls;
     }
 
     /**
      * Check that item is fully active
-     * @param $item
+     *
+     * @param  array $item
      * @return bool
      */
     protected function isItemActiveFully($item)
     {
-        if(isset($item['active']) && !empty($item['active'])) return true;
-        return parent::isItemActive($item);
+        if (isset($item['active']) && ! empty($item['active'])) {
+            return true;
+        }
+
+        return $this->isItemActive($item);
     }
 }

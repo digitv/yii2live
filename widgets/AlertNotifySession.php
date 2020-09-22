@@ -23,8 +23,12 @@ class AlertNotifySession extends Widget
     {
         $sessionMessages = Yii::$app->session->getAllFlashes(true);
         foreach ($sessionMessages as $key => $messages) {
-            if(!isset($this->messages[$key])) $this->messages[$key] = [];
-            if(!is_array($messages)) $messages = [$messages];
+            if (! isset($this->messages[$key])) {
+                $this->messages[$key] = [];
+            }
+            if (! is_array($messages)) {
+                $messages = [$messages];
+            }
             $this->messages[$key] = ArrayHelper::merge($this->messages[$key], $messages);
         }
     }
@@ -41,9 +45,12 @@ class AlertNotifySession extends Widget
                     'type' => $key,
                     'message' => $message,
                 ]);
-                if(!empty($result)) $output .= (string)$result;
+                if (! empty($result)) {
+                    $output .= (string)$result;
+                }
             }
         }
-        return !empty($output) ? $output : null;
+
+        return ! empty($output) ? $output : null;
     }
 }

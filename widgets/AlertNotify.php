@@ -2,9 +2,9 @@
 
 namespace digitv\yii2live\widgets;
 
-use digitv\yii2live\Yii2Live;
 use yii\bootstrap\Widget;
 use yii\web\JsExpression;
+use digitv\yii2live\Yii2Live;
 
 /**
  * Class AlertNotify
@@ -43,8 +43,10 @@ class AlertNotify extends Widget
     public function init()
     {
         parent::init();
-        if(!isset($this->type) || !in_array($this->type, static::$types)) $this->type = reset(static::$types);
-        if(isset($this->icon)) {
+        if (! isset($this->type) || ! in_array($this->type, static::$types)) {
+            $this->type = reset(static::$types);
+        }
+        if (isset($this->icon)) {
             $this->icon = strpos($this->icon, 'fa ') ? $this->icon : 'fa ' . $this->icon;
         } else {
             $this->setIconByType();
@@ -59,8 +61,8 @@ class AlertNotify extends Widget
         $settings = $this->getPluginSettings();
         $options = $this->getPluginOptions();
         $live = Yii2Live::getSelf();
-        if(isset($options)) {
-            if($live && $live->enable && $live->isLiveRequest()) {
+        if (isset($options)) {
+            if ($live && $live->enable && $live->isLiveRequest()) {
                 $live->commands()->messageAdd($this->getMessageOrTitle(), $this->type);
             } else {
                 $view = \Yii::$app->view;
@@ -75,9 +77,11 @@ class AlertNotify extends Widget
 
     /**
      * Get settings
+     *
      * @return array
      */
-    protected function getPluginSettings() {
+    protected function getPluginSettings()
+    {
         return [
             'delay' => $this->delay,
             'type' => $this->type,
@@ -89,38 +93,51 @@ class AlertNotify extends Widget
 
     /**
      * Get options
+     *
      * @return array
      */
-    protected function getPluginOptions() {
-        if(!isset($this->message) && !isset($this->title)) return null;
+    protected function getPluginOptions()
+    {
+        if (! isset($this->message) && ! isset($this->title)) {
+            return null;
+        }
         $keys = ['message', 'title', 'icon', 'url', 'target'];
         $options = [];
         foreach ($keys as $key) {
-            if(!isset($this->{$key})) continue;
+            if (! isset($this->{$key})) {
+                continue;
+            }
             $options[$key] = $this->{$key};
         }
+
         return $options;
     }
 
     /**
      * Set icon by alert type
      */
-    protected function setIconByType() {
+    protected function setIconByType()
+    {
         $icons = [
             'success' => 'fa fa-check-circle',
             'info' => 'fa fa-info-circle',
             'danger' => 'fa fa-exclamation-triangle',
             'warning' => 'fa fa-exclamation-triangle',
         ];
-        $this->icon = isset($icons[$this->type]) ? $icons[$this->type] : reset($icons);
+        $this->icon = $icons[$this->type] ?? reset($icons);
     }
 
     /**
      * Get message or title (If whatever is set)
+     *
      * @return string|null
      */
-    protected function getMessageOrTitle() {
-        if(isset($this->message)) return $this->message;
-        return isset($this->title) ? $this->title : null;
+    protected function getMessageOrTitle()
+    {
+        if (isset($this->message)) {
+            return $this->message;
+        }
+
+        return $this->title ?? null;
     }
 }

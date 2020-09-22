@@ -1,6 +1,6 @@
 {
     "name": "digitv/yii2live",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "description": "Yii2 Live package",
     "keywords": ["yii2", "ajax", "live", "node.js"],
     "type": "yii2-extension",

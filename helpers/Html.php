@@ -3,9 +3,9 @@
 namespace digitv\yii2live\helpers;
 
 use Yii;
-use yii\bootstrap\Html as BootstrapHtml;
-use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
+use yii\helpers\ArrayHelper;
+use yii\bootstrap\Html as BootstrapHtml;
 use digitv\yii2live\components\HtmlChain;
 
 /**
@@ -42,6 +42,7 @@ class Html extends BootstrapHtml
             $options['href'] = Url::to($url);
         }
         $config = ['tag' => 'a', 'tagContent' => $text, 'options' => $options];
+
         return static::createChain(HtmlChain::TYPE_LINK, $config);
     }
 
@@ -84,7 +85,7 @@ class Html extends BootstrapHtml
             }
         }
 
-        if (!strcasecmp($method, 'get') && ($pos = strpos($action, '?')) !== false) {
+        if (! strcasecmp($method, 'get') && ($pos = strpos($action, '?')) !== false) {
             // query parameters in the action are ignored for GET method
             // we use hidden fields to add them back
             foreach (explode('&', substr($action, $pos + 1)) as $pair) {
@@ -102,12 +103,11 @@ class Html extends BootstrapHtml
 
         $options['action'] = $action;
         $options['method'] = $method;
-        if (!empty($hiddenInputs)) {
+        if (! empty($hiddenInputs)) {
             $options['tagContent'] .= "\n" . implode("\n", $hiddenInputs);
         }
-        $form = static::beginTag('form', $options, true);
 
-        return $form;
+        return static::beginTag('form', $options, true);
     }
 
     /**
@@ -124,12 +124,15 @@ class Html extends BootstrapHtml
      */
     public static function beginTag($name, $options = [], $chain = false)
     {
-        if(!$chain) return parent::beginTag($name, $options);
+        if (! $chain) {
+            return parent::beginTag($name, $options);
+        }
         $config = [
             'tag' => $name,
             'options' => $options,
-            'tagContent' => isset($options['tagContent']) ? $options['tagContent'] : '',
+            'tagContent' => $options['tagContent'] ?? '',
         ];
+
         return static::createChain(HtmlChain::TYPE_BEGIN_TAG, $config);
     }
 
@@ -150,28 +153,34 @@ class Html extends BootstrapHtml
         $tag = ArrayHelper::remove($options, 'tag', 'i');
         $classPrefix = ArrayHelper::remove($options, 'prefix', 'fa fa-');
         static::addCssClass($options, $classPrefix . $name);
+
         return static::tag($tag, '', $options);
     }
 
     /**
      * Composes icon HTML for Glyphicons.
-     * @param string $name
-     * @param array $options
+     *
+     * @param  string $name
+     * @param  array  $options
      * @return string
      */
-    public static function iconGlyph($name, $options = []) {
+    public static function iconGlyph($name, $options = [])
+    {
         return parent::icon($name, $options);
     }
 
     /**
      * Create HtmlChain object
-     * @param string $type
-     * @param array $config
+     *
+     * @param  string $type
+     * @param  array  $config
      * @return HtmlChain
      */
-    protected static function createChain($type = HtmlChain::TYPE_LINK, $config = []) {
+    protected static function createChain($type = HtmlChain::TYPE_LINK, $config = [])
+    {
         $chain = new HtmlChain(['type' => $type]);
         $chain->load($config);
+
         return $chain;
     }
 }

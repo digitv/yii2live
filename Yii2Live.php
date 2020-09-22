@@ -2,20 +2,20 @@
 
 namespace digitv\yii2live;
 
-use digitv\yii2live\behaviors\WidgetBehavior;
-use digitv\yii2live\components\JsCommand;
-use digitv\yii2live\components\PageAttributes;
-use digitv\yii2live\components\Request;
-use digitv\yii2live\components\Response;
-use digitv\yii2live\components\View;
-use digitv\yii2live\widgets\BaseLiveWidget;
-use digitv\yii2live\widgets\HtmlInline;
-use digitv\yii2live\yii2sockets\YiiNodeSocketFrameLoader;
 use Yii;
-use yii\base\Application;
-use yii\base\BootstrapInterface;
 use yii\base\Component;
+use yii\base\Application;
 use yii\helpers\ArrayHelper;
+use yii\base\BootstrapInterface;
+use digitv\yii2live\components\View;
+use digitv\yii2live\components\Request;
+use digitv\yii2live\widgets\HtmlInline;
+use digitv\yii2live\components\Response;
+use digitv\yii2live\components\JsCommand;
+use digitv\yii2live\widgets\BaseLiveWidget;
+use digitv\yii2live\behaviors\WidgetBehavior;
+use digitv\yii2live\components\PageAttributes;
+use digitv\yii2live\yii2sockets\YiiNodeSocketFrameLoader;
 
 /**
  * Class Yii2Async
@@ -93,7 +93,9 @@ class Yii2Live extends Component implements BootstrapInterface
     public function init()
     {
         parent::init();
-        if(!isset($_SESSION[static::SESSION_WIDGETS_KEY])) $_SESSION[static::SESSION_WIDGETS_KEY] = [];
+        if (! isset($_SESSION[static::SESSION_WIDGETS_KEY])) {
+            $_SESSION[static::SESSION_WIDGETS_KEY] = [];
+        }
         static::$self = $this;
     }
 
@@ -103,15 +105,17 @@ class Yii2Live extends Component implements BootstrapInterface
      */
     public function bootstrap($app)
     {
-        if(!$this->enable) return;
+        if (! $this->enable) {
+            return;
+        }
         Yii::setAlias('@yii2live', __DIR__);
         $components = $app->getComponents(true);
-        $requestDefinition = isset($components['request']) ? $components['request'] : [];
-        $responseDefinition = isset($components['response']) ? $components['response'] : [];
-        $viewDefinition = isset($components['view']) ? $components['view'] : [];
-        $requestDefinition['class'] = Request::className();
-        $responseDefinition['class'] = Response::className();
-        $viewDefinition['class'] = View::className();
+        $requestDefinition = $components['request'] ?? [];
+        $responseDefinition = $components['response'] ?? [];
+        $viewDefinition = $components['view'] ?? [];
+        $requestDefinition['class'] = Request::class;
+        $responseDefinition['class'] = Response::class;
+        $viewDefinition['class'] = View::class;
         $app->setComponents([
             'response' => $responseDefinition,
             'request' => $requestDefinition,
@@ -121,13 +125,16 @@ class Yii2Live extends Component implements BootstrapInterface
 
     /**
      * Check that request is performed by yii2live component
+     *
      * @return bool
      */
-    public function isLiveRequest() {
-        if(!isset($this->_isLiveRequest)) {
+    public function isLiveRequest()
+    {
+        if (! isset($this->_isLiveRequest)) {
             $request = Yii::$app->request;
             $this->_isLiveRequest = $request instanceof Request && $request->isLiveUsed();
         }
+
         return $this->_isLiveRequest;
     }
 
@@ -136,7 +143,8 @@ class Yii2Live extends Component implements BootstrapInterface
      * @param BaseLiveWidget|WidgetBehavior $widget
      * @throws \yii\base\ExitException
      */
-    public function setWidgetData($widget) {
+    public function setWidgetData($widget)
+    {
         $widgetId = $widget instanceof BaseLiveWidget ? $widget->id : $widget->owner->id;
         /** @var BaseLiveWidget|HtmlInline $widgetBase */
         $widgetBase = $widget instanceof BaseLiveWidget ? $widget : $widget->owner;
@@ -144,24 +152,24 @@ class Yii2Live extends Component implements BootstrapInterface
         $required = isset($widgetBase->loadOnAnyRequest) && $widgetBase->loadOnAnyRequest;
         /** @var Response $response */
         $response = Yii::$app->response;
-        if($required) {
+        if ($required) {
             $response->livePageWidgetsRequired[] = $widgetId;
         }
-        if($widget->widgetType === WidgetBehavior::LIVE_WIDGET_TYPE_COMMANDS && !empty($data['data']) && is_array($data['data'])) {
+        if ($widget->widgetType === WidgetBehavior::LIVE_WIDGET_TYPE_COMMANDS && ! empty($data['data']) && is_array($data['data'])) {
             $response->liveCommands = ArrayHelper::merge($response->liveCommands, $data['data']);
         }
         $response->livePageWidgets[$widgetId] = $data;
         //Send response immediately for this context
-        if($this->getContextType() === static::CONTEXT_TYPE_EXACT && $this->getContextId() === $widgetId) {
+        if ($this->getContextType() === static::CONTEXT_TYPE_EXACT && $this->getContextId() === $widgetId) {
             foreach ($response->livePageWidgets as $_widgetId => $_widgetData) {
-                if($_widgetId !== $widgetId && !in_array($_widgetId, $response->livePageWidgetsRequired)) {
+                if ($_widgetId !== $widgetId && ! in_array($_widgetId, $response->livePageWidgetsRequired, true)) {
                     unset($response->livePageWidgets[$_widgetId]);
                 }
             }
             /** @var View $view */
             $view = Yii::$app->view;
             $response->clearOutputBuffers();
-            $response->content = $view->renderFile($view->liveLayoutFile, [ 'content' => '' ]);
+            $response->content = $view->renderFile($view->liveLayoutFile, ['content' => '']);
             $response->data = [];
             $response->send();
             Yii::$app->end();
@@ -170,26 +178,33 @@ class Yii2Live extends Component implements BootstrapInterface
 
     /**
      * Get widget state for request
-     * @param string $widgetId
+     *
+     * @param  string $widgetId
      * @return array|null
      */
-    public function getWidgetRequestState($widgetId) {
+    public function getWidgetRequestState($widgetId)
+    {
         $requestId = $this->requestId;
         $data = $_SESSION[static::SESSION_WIDGETS_KEY];
-        if(!isset($data[$requestId]) || !isset($data[$requestId][$widgetId])) return null;
+        if (! isset($data[$requestId]) || ! isset($data[$requestId][$widgetId])) {
+            return null;
+        }
+
         return $data[$requestId][$widgetId];
     }
 
     /**
      * Set widget state for request
-     * @param string $widgetId
-     * @param array $data
+     *
+     * @param  string $widgetId
+     * @param  array  $data
      */
-    public function setWidgetRequestState($widgetId, $data) {
+    public function setWidgetRequestState($widgetId, $data)
+    {
         $_SESSION[static::SESSION_WIDGETS_KEY][$this->requestId][$widgetId] = $data;
         $maxLength = 10;
         //Cleanup session widgets states
-        if(count($_SESSION[static::SESSION_WIDGETS_KEY]) > $maxLength) {
+        if (count($_SESSION[static::SESSION_WIDGETS_KEY]) > $maxLength) {
             krsort($_SESSION[static::SESSION_WIDGETS_KEY]);
             $_SESSION[static::SESSION_WIDGETS_KEY] = array_slice($_SESSION[static::SESSION_WIDGETS_KEY], 0, $maxLength);
             ksort($_SESSION[static::SESSION_WIDGETS_KEY]);
@@ -198,113 +213,140 @@ class Yii2Live extends Component implements BootstrapInterface
 
     /**
      * Get request ID
+     *
      * @return string
      */
-    public function getRequestId() {
-        if(!isset($this->_requestId)) {
+    public function getRequestId()
+    {
+        if (! isset($this->_requestId)) {
             $requestId = $this->getRequestHeaderId();
-            if(!$requestId) {
+            if (! $requestId) {
                 $time = ceil(microtime(true) * 10000);
                 $rand = rand(1000, 9999);
-                $requestId = $time . '_' .  md5($time . ':' . $rand);
+                $requestId = $time . '_' . md5($time . ':' . $rand);
             }
             $this->_requestId = $requestId;
         }
+
         return $this->_requestId;
     }
 
     /**
      * Get context type
+     *
      * @return string
      */
-    public function getContextType() {
-        if(!isset($this->_requestContextType)) {
+    public function getContextType()
+    {
+        if (! isset($this->_requestContextType)) {
             /** @var Request $request */
             $request = Yii::$app->request;
             $context = $request->getRequestContext();
-            if(in_array($context, [static::CONTEXT_TYPE_PAGE, static::CONTEXT_TYPE_PARTIAL])) {
+            if (in_array($context, [static::CONTEXT_TYPE_PAGE, static::CONTEXT_TYPE_PARTIAL])) {
                 $this->_requestContextType = $context;
             } else {
                 $this->_requestContextType = static::CONTEXT_TYPE_EXACT;
             }
         }
+
         return $this->_requestContextType;
     }
 
     /**
      * Get context ID
+     *
      * @return null|string
      */
-    public function getContextId() {
-        if(!isset($this->_requestContext)) {
+    public function getContextId()
+    {
+        if (! isset($this->_requestContext)) {
             /** @var Request $request */
             $request = Yii::$app->request;
             $contextType = $this->getContextType();
-            if($contextType === static::CONTEXT_TYPE_EXACT) $this->_requestContext = $request->getRequestContext();
-            else $this->_requestContext = false;
+            $this->_requestContext = $contextType === static::CONTEXT_TYPE_EXACT
+                ? $request->getRequestContext()
+                : false;
         }
+
         return $this->_requestContext !== false ? $this->_requestContext : null;
     }
 
     /**
      * Check context type or id
-     * @param string $context
+     *
+     * @param  string $context
      * @return bool
      */
-    public function checkContext($context) {
-        if(!is_string($context)) return false;
+    public function checkContext($context)
+    {
+        if (! is_string($context)) {
+            return false;
+        }
         $contextTypes = [static::CONTEXT_TYPE_PARTIAL, static::CONTEXT_TYPE_PAGE, static::CONTEXT_TYPE_EXACT];
         //Check for context type
-        if(in_array($context, $contextTypes)) {
+        if (in_array($context, $contextTypes)) {
             return $this->getContextType() === $context;
         }
+
         //Check for exact context ID
         return $this->getContextId() === $context;
     }
 
     /**
      * Add commands to response
+     *
      * @return JsCommand
      */
-    public function commands() {
+    public function commands()
+    {
         return JsCommand::getInstance();
     }
 
     /**
      * Set or get elements attributes in view
+     *
      * @return PageAttributes
      */
-    public function attributes() {
+    public function attributes()
+    {
         return PageAttributes::getInstance();
     }
 
     /**
      * Check that node.js sockets is connected
+     *
      * @return bool
      */
-    public function isSocketsActive() {
-        if(!isset($this->_hasNodeSockets)) {
+    public function isSocketsActive()
+    {
+        if (! isset($this->_hasNodeSockets)) {
             $components = Yii::$app->components;
-            if(!$this->useNodeJs || !isset($components['nodeSockets'])) {
+            if (! $this->useNodeJs || ! isset($components['nodeSockets'])) {
                 $this->_hasNodeSockets = false;
             } else {
                 $this->_hasNodeSockets = Yii::$app->nodeSockets->hasSocketConnected();
             }
         }
+
         return $this->_hasNodeSockets;
     }
 
     /**
      * Add progress message
-     * @param string $message
-     * @param string $key
-     * @param bool $finished
+     *
+     * @param  string      $message
+     * @param  string|null $key
+     * @param  bool        $finished
      * @return bool|mixed
      */
-    public function progressMessageAdd($message, $key = null, $finished = false) {
-        if(!$this->enable || !$this->isSocketsActive()) return false;
+    public function progressMessageAdd($message, $key = null, $finished = false)
+    {
+        if (! $this->enable || ! $this->isSocketsActive()) {
+            return false;
+        }
         $frame = new YiiNodeSocketFrameLoader();
         $frame->addProgressMessage($message, $key, $finished);
+
         return $frame->sendToThis();
     }
 
